@@ -14,7 +14,11 @@ exports.handler = async (event) => {
   const unit = (event.queryStringParameters && event.queryStringParameters.unit) || null;
 
   try {
-    const store = getStore("poin-menginap");
+    const store = getStore({
+      name: "poin-menginap",
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_API_TOKEN
+    });
     const tahun = new Date().getFullYear();
 
     if (event.httpMethod === "GET") {

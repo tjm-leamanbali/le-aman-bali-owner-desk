@@ -26,7 +26,11 @@ function generateId(){
 
 exports.handler = async (event) => {
   try {
-    const store = getStore("komplain-log");
+    const store = getStore({
+      name: "komplain-log",
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_API_TOKEN
+    });
 
     if (event.httpMethod === "GET") {
       const { blobs } = await store.list();
