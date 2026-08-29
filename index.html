@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Le Aman Bali Owner Desk</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#0E1E24">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LA Owner Desk">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --ink: #0E1E24;
+    --panel: #16292F;
+    --panel-2: #1C333A;
+    --brass: #C6A15B;
+    --brass-bright: #E4C685;
+    --ivory: #F3EEE3;
+    --ivory-dim: #C7CDC7;
+    --line: rgba(198,161,91,0.22);
+    --rose: #C4707A;
+    --sage: #7FA98D;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(198,161,91,0.10), transparent 60%),
+      radial-gradient(900px 500px at 100% 110%, rgba(127,169,141,0.08), transparent 60%),
+      var(--ink);
+    color:var(--ivory);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    min-height:100dvh;
+    height:100vh;
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  ::selection{ background:var(--brass); color:var(--ink); }
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 12px;
+    padding:16px 20px;
+    padding-top:calc(16px + env(safe-area-inset-top));
+    padding-left:calc(20px + env(safe-area-inset-left));
+    padding-right:calc(20px + env(safe-area-inset-right));
+    border-bottom:1px solid var(--line);
+    flex-shrink:0;
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{
+    width:34px; height:34px; border-radius:3px;
+    background:linear-gradient(155deg, var(--brass-bright), var(--brass) 60%, #8a6d34);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif; font-weight:600; color:var(--ink); font-size:13px; letter-spacing:0.3px;
+  }
+  .brand-text{ display:flex; flex-direction:column; line-height:1.15; }
+  .brand-text b{ font-family:'Fraunces', serif; font-weight:600; font-size:16.5px; letter-spacing:0.2px; }
+  .brand-text span{ font-size:11px; color:var(--ivory-dim); letter-spacing:1.5px; text-transform:uppercase; }
+  .topbar-status{ font-size:12px; color:var(--ivory-dim); display:flex; align-items:center; gap:8px; }
+  .dot{ width:7px; height:7px; border-radius:50%; background:var(--sage); box-shadow:0 0 8px var(--sage); }
+
+  /* ---------- Layout ---------- */
+  .stage{ flex:1; display:flex; align-items:center; justify-content:center; padding:28px; overflow-y:auto; min-height:0; }
+
+  /* ---------- Check-in card (pre-verification) ---------- */
+  .checkin{
+    width:100%; max-width:430px;
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:34px 32px 30px;
+    box-shadow:0 30px 60px -25px rgba(0,0,0,0.6);
+    position:relative; overflow:hidden;
+  }
+  .checkin::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, transparent, var(--brass-bright), transparent);
+  }
+  .checkin-eyebrow{ font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--brass-bright); margin-bottom:10px; }
+  .checkin h1{ font-family:'Fraunces', serif; font-weight:500; font-size:26px; line-height:1.25; margin-bottom:8px; }
+  .checkin p.sub{ color:var(--ivory-dim); font-size:13.5px; line-height:1.55; margin-bottom:26px; }
+
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:11.5px; letter-spacing:0.6px; text-transform:uppercase; color:var(--ivory-dim); margin-bottom:7px; }
+  .field input{
+    width:100%; background:rgba(0,0,0,0.22); border:1px solid var(--line);
+    color:var(--ivory); font-family:'Inter', sans-serif; font-size:14.5px;
+    padding:12px 13px; border-radius:8px; outline:none;
+    transition:border-color .15s, background .15s;
+  }
+  .field input:focus{ border-color:var(--brass); background:rgba(0,0,0,0.32); }
+  .field input::placeholder{ color:rgba(199,205,199,0.4); }
+
+  .keycard{
+    margin-top:6px; margin-bottom:22px;
+    border:1px dashed var(--line); border-radius:10px;
+    padding:14px 16px;
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    background:rgba(198,161,91,0.045);
+  }
+  .keycard .kc-label{ font-size:10px; letter-spacing:1.5px; color:var(--ivory-dim); text-transform:uppercase; }
+  .keycard .kc-value{ font-size:15px; color:var(--brass-bright); font-weight:600; letter-spacing:1px; }
+
+  .btn-primary{
+    width:100%; border:none; border-radius:8px; padding:13px 16px;
+    background:linear-gradient(155deg, var(--brass-bright), var(--brass));
+    color:#20180A; font-weight:600; font-size:14px; letter-spacing:0.3px;
+    cursor:pointer; transition:transform .12s, box-shadow .12s;
+    font-family:'Inter', sans-serif;
+  }
+  .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 8px 20px -6px rgba(198,161,91,0.5); }
+  .btn-primary:disabled{ opacity:0.55; cursor:default; transform:none; box-shadow:none; }
+
+  .verify-note{ margin-top:14px; font-size:12px; color:var(--ivory-dim); text-align:center; }
+
+  .error-msg{
+    display:none; margin-top:16px; padding:12px 14px; border-radius:8px;
+    background:rgba(196,112,122,0.12); border:1px solid rgba(196,112,122,0.4);
+    color:#E6AEB4; font-size:13px; line-height:1.5;
+  }
+  .error-msg.show{ display:block; animation:shake .35s; }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+
+  .scan-overlay{
+    display:none; position:absolute; inset:0; background:rgba(14,30,36,0.92);
+    align-items:center; justify-content:center; flex-direction:column; gap:14px;
+  }
+  .scan-overlay.show{ display:flex; }
+  .scan-line{
+    width:70%; height:2px; background:var(--brass-bright); position:relative; overflow:visible;
+    box-shadow:0 0 10px var(--brass-bright);
+    animation:scanmove 1.1s ease-in-out infinite;
+  }
+  @keyframes scanmove{ 0%,100%{ transform:translateY(-16px); opacity:.3; } 50%{ transform:translateY(16px); opacity:1; } }
+  .scan-overlay span{ font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--ivory-dim); }
+
+  /* ---------- Main app (post-verification) ---------- */
+  .app{ display:none; width:100%; flex:1; min-height:0; }
+  .app.show{ display:flex; }
+  .app-grid{
+    display:flex; width:100%; max-width:1180px; margin:0 auto;
+    height:100%; min-height:0; padding:22px 28px 26px; gap:20px;
+  }
+
+  /* Sidebar */
+  .sidebar{
+    width:270px; flex-shrink:0;
+    display:flex; flex-direction:column; gap:16px;
+    overflow-y:auto; min-height:0;
+    padding-right:4px; /* beri jarak dari scrollbar */
+  }
+  .profile-card{
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line); border-radius:12px; padding:20px;
+  }
+  .profile-eyebrow{ font-size:10px; letter-spacing:1.6px; text-transform:uppercase; color:var(--ivory-dim); margin-bottom:12px; }
+  .profile-name{ font-family:'Fraunces', serif; font-size:19px; font-weight:500; margin-bottom:14px; line-height:1.3; }
+  .profile-row{ display:flex; justify-content:space-between; padding:8px 0; border-top:1px solid var(--line); font-size:12.5px; }
+
+  .points-card{ border-color:rgba(198,161,91,0.35); }
+  .points-remaining{ display:flex; align-items:baseline; gap:6px; margin-bottom:10px; }
+  .points-remaining span:first-child{ font-family:'IBM Plex Mono', monospace; font-size:28px; font-weight:600; color:var(--brass-bright); line-height:1; }
+  .points-unit{ font-size:11.5px; color:var(--ivory-dim); }
+  .points-bar-track{ height:6px; border-radius:4px; background:rgba(255,255,255,0.08); overflow:hidden; margin-bottom:4px; }
+  .points-bar-fill{ height:100%; background:linear-gradient(90deg, var(--brass), var(--brass-bright)); border-radius:4px; transition:width .3s; }
+  .points-note{ font-size:10.5px; color:var(--ivory-dim); line-height:1.5; margin-top:8px; }
+  .profile-row span:first-child{ color:var(--ivory-dim); }
+  .profile-row span:last-child{ font-family:'IBM Plex Mono', monospace; color:var(--brass-bright); }
+
+  .quick-actions{ display:flex; flex-direction:column; gap:8px; }
+  .qa-label{ font-size:10px; letter-spacing:1.6px; text-transform:uppercase; color:var(--ivory-dim); padding:0 2px 2px; }
+  .qa-btn{
+    text-align:left; background:var(--panel); border:1px solid var(--line);
+    color:var(--ivory); font-family:'Inter', sans-serif; font-size:13px;
+    padding:11px 13px; border-radius:9px; cursor:pointer;
+    display:flex; align-items:center; gap:10px;
+    transition:border-color .15s, background .15s;
+  }
+  .qa-btn:hover{ border-color:var(--brass); background:var(--panel-2); }
+  .qa-icon{ font-size:15px; width:18px; text-align:center; }
+
+  .signout{
+    margin-top:auto; background:none; border:1px solid var(--line); color:var(--ivory-dim);
+    font-size:12px; padding:10px; border-radius:9px; cursor:pointer; font-family:'Inter', sans-serif;
+  }
+  .signout:hover{ color:var(--rose); border-color:rgba(196,112,122,0.4); }
+
+  /* Chat panel */
+  .chat-panel{
+    flex:1; min-height:0; display:flex; flex-direction:column;
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line); border-radius:12px; overflow:hidden;
+  }
+  .chat-header{
+    padding:16px 20px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:10px;
+  }
+  .chat-header .avatar{
+    width:30px; height:30px; border-radius:50%;
+    background:linear-gradient(155deg, var(--brass-bright), var(--brass));
+    display:flex; align-items:center; justify-content:center; font-size:14px;
+  }
+  .chat-header b{ font-size:13.5px; font-weight:600; }
+  .chat-header small{ display:block; font-size:11px; color:var(--sage); }
+
+  .chat-log{ flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:20px; display:flex; flex-direction:column; gap:14px; }
+  .msg{ max-width:74%; padding:11px 14px; border-radius:12px; font-size:14px; line-height:1.55; }
+  .msg.ai{ align-self:flex-start; background:var(--panel-2); border:1px solid var(--line); border-bottom-left-radius:3px; }
+  .msg.user{ align-self:flex-end; background:linear-gradient(155deg, var(--brass), #a5813f); color:#1c1608; border-bottom-right-radius:3px; font-weight:500; }
+  .msg.typing{ align-self:flex-start; display:flex; gap:4px; padding:14px 16px; }
+
+  .booking-confirm-card{
+    max-width:80%; padding:16px 18px; border-radius:12px; border-bottom-left-radius:3px;
+    background:linear-gradient(180deg, rgba(198,161,91,0.10), rgba(198,161,91,0.04));
+    border:1px solid rgba(198,161,91,0.4);
+  }
+  .confirm-card-title{ font-family:'Fraunces', serif; font-size:14.5px; font-weight:600; color:var(--brass-bright); margin-bottom:8px; }
+  .confirm-card-summary{ font-size:13px; line-height:1.55; color:var(--ivory); margin-bottom:10px; white-space:pre-wrap; }
+  .confirm-card-points{ font-size:13px; color:var(--ivory-dim); margin-bottom:14px; }
+  .confirm-card-points b{ color:var(--brass-bright); font-family:'IBM Plex Mono', monospace; }
+  .confirm-card-btn{
+    width:100%; border:none; border-radius:8px; padding:11px 16px;
+    background:linear-gradient(155deg, var(--brass-bright), var(--brass));
+    color:#20180A; font-weight:600; font-size:13.5px; cursor:pointer;
+    transition:transform .12s;
+  }
+  .confirm-card-btn:hover:not(:disabled){ transform:translateY(-1px); }
+  .confirm-card-btn:disabled{ opacity:0.6; cursor:default; }
+  .confirm-card-status{ font-size:13px; color:var(--sage); margin-top:4px; line-height:1.5; }
+  .booking-confirm-card.confirmed{ border-color:rgba(127,169,141,0.4); background:linear-gradient(180deg, rgba(127,169,141,0.08), rgba(127,169,141,0.03)); }
+  .msg.typing span{ width:6px; height:6px; border-radius:50%; background:var(--ivory-dim); animation:blink 1.1s infinite; }
+  .msg.typing span:nth-child(2){ animation-delay:.18s; }
+  .msg.typing span:nth-child(3){ animation-delay:.36s; }
+  @keyframes blink{ 0%,80%,100%{ opacity:.25; } 40%{ opacity:1; } }
+
+  .chat-input{
+    border-top:1px solid var(--line); padding:14px 16px;
+    padding-bottom:calc(14px + env(safe-area-inset-bottom));
+    display:flex; gap:10px; align-items:flex-end;
+    flex-shrink:0;
+  }
+  .chat-input textarea{
+    flex:1; resize:none; background:rgba(0,0,0,0.22); border:1px solid var(--line);
+    color:var(--ivory); font-family:'Inter', sans-serif; font-size:14px;
+    padding:11px 13px; border-radius:9px; outline:none; max-height:110px;
+  }
+  .chat-input textarea:focus{ border-color:var(--brass); }
+  .send-btn{
+    background:linear-gradient(155deg, var(--brass-bright), var(--brass));
+    border:none; color:#20180A; font-weight:600; font-size:13px;
+    padding:11px 18px; border-radius:9px; cursor:pointer; flex-shrink:0;
+  }
+  .send-btn:disabled{ opacity:0.5; cursor:default; }
+
+  @media (max-width: 820px){
+    .app-grid{ flex-direction:column; padding:12px; gap:12px; }
+    .sidebar{
+      width:100%; flex-direction:row; overflow-x:auto; flex-shrink:0;
+      -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity;
+      padding-bottom:2px;
+    }
+    .profile-card{ min-width:200px; scroll-snap-align:start; padding:16px; }
+    .quick-actions{ flex-direction:row; }
+    .qa-btn{ white-space:nowrap; scroll-snap-align:start; }
+    .signout{ display:none; }
+    .chat-panel{ flex:1; min-height:0; }
+  }
+
+  @media (max-width: 480px){
+    .topbar{ padding:12px 14px; padding-top:calc(12px + env(safe-area-inset-top)); }
+    .brand-mark{ width:28px; height:28px; font-size:11px; }
+    .brand-text b{ font-size:14px; }
+    .brand-text span{ font-size:9px; letter-spacing:1px; }
+    .topbar-status{ font-size:11px; gap:6px; }
+    .status-label{ display:none; }
+    .admin-link{ padding:5px 10px; font-size:10px; }
+
+    .stage{ padding:14px; }
+    .checkin{ padding:24px 18px 22px; border-radius:12px; }
+    .checkin h1{ font-size:21px; }
+    .checkin p.sub{ font-size:12.5px; margin-bottom:20px; }
+    .checkin-eyebrow{ font-size:10px; }
+
+    .app-grid{ padding:10px; gap:10px; }
+    .profile-card{ min-width:170px; padding:14px; }
+    .profile-name{ font-size:16px; }
+    .qa-btn{ font-size:12px; padding:10px 12px; }
+    .chat-header{ padding:12px 14px; }
+    .chat-log{ padding:14px; gap:11px; }
+    .msg{ max-width:86%; font-size:13.5px; padding:10px 12px; }
+    .chat-input{ padding:10px 12px; padding-bottom:calc(10px + env(safe-area-inset-bottom)); }
+    .send-btn{ padding:11px 15px; font-size:12.5px; }
+
+    .admin-modal{ padding:20px 16px 22px; max-height:90vh; border-radius:12px; }
+    .admin-modal-head b{ font-size:16.5px; }
+    .admin-desc{ font-size:12.5px; margin-bottom:14px; }
+    .admin-step p{ font-size:12px; }
+  }
+
+  /* Ukuran font input min. 16px mencegah auto-zoom saat fokus di Safari/Chrome iOS & Android */
+  @media (max-width: 600px){
+    .field input, .chat-input textarea, .admin-file-input{ font-size:16px; }
+  }
+
+  /* ---------- Admin ---------- */
+  .admin-link{
+    background:none; border:1px solid var(--line); color:var(--ivory-dim);
+    font-size:11px; letter-spacing:0.6px; text-transform:uppercase;
+    padding:6px 12px; border-radius:20px; cursor:pointer; font-family:'Inter', sans-serif;
+    transition:border-color .15s, color .15s;
+  }
+  .admin-link:hover{ border-color:var(--brass); color:var(--brass-bright); }
+
+  .admin-overlay{
+    display:none; position:fixed; inset:0; background:rgba(6,14,17,0.72);
+    align-items:center; justify-content:center;
+    padding:20px;
+    padding-top:calc(20px + env(safe-area-inset-top));
+    padding-bottom:calc(20px + env(safe-area-inset-bottom));
+    z-index:50;
+  }
+  .admin-overlay.show{ display:flex; }
+  .admin-modal{
+    width:100%; max-width:640px; max-height:86vh; overflow-y:auto;
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line); border-radius:14px; padding:26px 28px 28px;
+    box-shadow:0 40px 80px -30px rgba(0,0,0,0.65);
+  }
+  .admin-modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+
+  .admin-tabs{ display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:18px; }
+  .admin-tab{
+    background:none; border:none; color:var(--ivory-dim); font-family:'Inter', sans-serif;
+    font-size:13px; font-weight:600; padding:10px 14px; cursor:pointer; position:relative;
+    display:flex; align-items:center; gap:6px;
+  }
+  .admin-tab.active{ color:var(--brass-bright); }
+  .admin-tab.active::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--brass-bright); }
+  .admin-tab-badge{
+    background:var(--rose); color:#fff; font-size:10px; font-weight:700; border-radius:10px;
+    padding:1px 7px; line-height:1.4;
+  }
+  .admin-tab-content{ display:none; }
+  .admin-tab-content.active{ display:block; }
+
+  .komplain-status-select{
+    background:var(--panel); border:1px solid var(--line); color:var(--ivory);
+    font-family:'Inter', sans-serif; font-size:11.5px; padding:5px 8px; border-radius:6px; cursor:pointer;
+  }
+  .komplain-status-badge{
+    display:inline-block; font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:12px;
+    letter-spacing:0.2px;
+  }
+  .komplain-status-badge.status-baru{ background:rgba(196,112,122,0.18); color:#E6AEB4; }
+  .komplain-status-badge.status-diproses{ background:rgba(198,161,91,0.18); color:var(--brass-bright); }
+  .komplain-status-badge.status-selesai{ background:rgba(127,169,141,0.18); color:var(--sage); }
+  .komplain-ringkasan-cell{ max-width:220px; white-space:normal; line-height:1.4; }
+  .admin-modal-head b{ font-family:'Fraunces', serif; font-size:19px; font-weight:500; }
+  .admin-close{
+    background:none; border:none; color:var(--ivory-dim); font-size:16px; cursor:pointer;
+    width:28px; height:28px; border-radius:50%;
+  }
+  .admin-close:hover{ color:var(--rose); background:rgba(196,112,122,0.1); }
+  .admin-desc{ color:var(--ivory-dim); font-size:13px; line-height:1.55; margin-bottom:18px; }
+  .admin-config-note{ margin-top:14px; font-size:11.5px; color:var(--ivory-dim); line-height:1.5; }
+
+  .admin-toolbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .admin-sync-status{ font-size:11.5px; color:var(--sage); font-family:'IBM Plex Mono', monospace; }
+  .admin-add-btn{
+    background:linear-gradient(155deg, var(--brass-bright), var(--brass)); border:none;
+    color:#20180A; font-weight:600; font-size:12.5px; padding:9px 15px; border-radius:8px; cursor:pointer;
+  }
+  .admin-refresh-btn{
+    background:none; border:1px solid var(--line); color:var(--ivory-dim); font-weight:500;
+  }
+  .admin-refresh-btn:hover{ border-color:var(--brass); color:var(--brass-bright); }
+
+  .admin-steps{ display:flex; flex-direction:column; gap:16px; margin-bottom:20px; }
+  .admin-step{ display:flex; gap:12px; align-items:flex-start; }
+  .admin-step-num{
+    flex-shrink:0; width:24px; height:24px; border-radius:50%;
+    background:rgba(198,161,91,0.15); border:1px solid var(--line);
+    color:var(--brass-bright); font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .admin-step b{ font-size:13.5px; font-weight:600; display:block; margin-bottom:3px; }
+  .admin-step p{ font-size:12.5px; color:var(--ivory-dim); line-height:1.5; margin-bottom:8px; }
+  .admin-file-input{
+    font-size:12.5px; color:var(--ivory-dim); font-family:'Inter', sans-serif;
+  }
+  .admin-file-input::file-selector-button{
+    background:var(--panel); border:1px solid var(--line); color:var(--ivory);
+    padding:7px 12px; border-radius:6px; font-size:12px; cursor:pointer; margin-right:10px;
+    font-family:'Inter', sans-serif;
+  }
+  .admin-file-input::file-selector-button:hover{ border-color:var(--brass); }
+
+  .admin-table-wrap{ border:1px solid var(--line); border-radius:10px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .admin-table{ width:100%; min-width:460px; border-collapse:collapse; font-size:12.5px; }
+  .admin-table th{
+    text-align:left; padding:10px 12px; background:rgba(198,161,91,0.08);
+    color:var(--ivory-dim); font-size:10.5px; letter-spacing:0.8px; text-transform:uppercase; font-weight:600;
+  }
+  .admin-table td{ padding:10px 12px; border-top:1px solid var(--line); vertical-align:middle; }
+  .admin-table tr:hover td{ background:rgba(198,161,91,0.04); }
+  .admin-row-actions{ display:flex; gap:8px; justify-content:flex-end; }
+  .admin-row-actions button{
+    background:none; border:1px solid var(--line); color:var(--ivory-dim);
+    font-size:11px; padding:5px 10px; border-radius:6px; cursor:pointer; font-family:'Inter', sans-serif;
+  }
+  .admin-row-actions button.edit:hover{ border-color:var(--brass); color:var(--brass-bright); }
+  .admin-row-actions button.del:hover{ border-color:var(--rose); color:var(--rose); }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">LA</div>
+      <div class="brand-text">
+        <b>Le Aman Bali</b>
+        <span>Owner Desk · TJM Management</span>
+      </div>
+    </div>
+    <div class="topbar-status">
+      <span class="dot"></span> <span class="status-label">AI Concierge · Online</span>
+      <button id="openAdminBtn" class="admin-link">Admin</button>
+    </div>
+  </div>
+
+  <!-- ADMIN MODAL -->
+  <div class="admin-overlay" id="adminOverlay">
+    <div class="admin-modal">
+      <div class="admin-modal-head">
+        <b id="adminModalTitle">Panel Admin</b>
+        <button id="closeAdminBtn" class="admin-close">✕</button>
+      </div>
+
+      <div class="admin-tabs">
+        <button class="admin-tab active" id="tabBtnPemilik" data-tab="pemilik">Data Pemilik</button>
+        <button class="admin-tab" id="tabBtnKomplain" data-tab="komplain">Daftar Komplain <span class="admin-tab-badge" id="komplainBaruBadge" style="display:none;">0</span></button>
+      </div>
+
+      <div class="admin-panel-body admin-tab-content active" id="adminTabPemilik">
+        <p class="admin-desc">
+          Database ini tersimpan di dalam file aplikasi ini sendiri. Untuk memperbarui data:
+          edit file Excel-nya seperti biasa, lalu impor ke sini, lalu unduh ulang aplikasinya.
+          Tidak perlu internet, akun Google, atau kode apa pun.
+        </p>
+
+        <div class="admin-steps">
+          <div class="admin-step">
+            <span class="admin-step-num">1</span>
+            <div>
+              <b>Impor file Excel</b>
+              <p>Pilih file .xlsx yang sudah diisi/diedit (gunakan template yang disediakan). Kalau file .xlsx gagal terbaca, simpan sebagai .csv (File → Save As → CSV di Excel) lalu unggah file .csv itu — cara ini tidak butuh internet sama sekali.</p>
+              <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" class="admin-file-input">
+              <div class="error-msg" id="adminImportError"></div>
+            </div>
+          </div>
+          <div class="admin-step">
+            <span class="admin-step-num">2</span>
+            <div>
+              <b>Periksa data</b>
+              <p id="adminSyncStatus" class="admin-sync-status">Belum ada file diimpor — menampilkan data yang tersimpan di aplikasi saat ini.</p>
+            </div>
+          </div>
+          <div class="admin-step">
+            <span class="admin-step-num">3</span>
+            <div>
+              <b>Unduh aplikasi terbaru</b>
+              <p>File HTML baru akan berisi data ini. Bagikan file baru tersebut ke semua pemilik unit.</p>
+              <button class="admin-add-btn" id="adminDownloadBtn">Unduh Aplikasi Terbaru (.html)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="adminTable">
+            <thead>
+              <tr><th>Nama</th><th>Unit</th><th>No. HP</th><th>No. Perjanjian</th></tr>
+            </thead>
+            <tbody id="adminTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-panel-body admin-tab-content" id="adminTabKomplain">
+        <p class="admin-desc">
+          Daftar komplain yang masuk lewat chat AI, tersimpan permanen (Netlify Blobs) supaya bisa
+          ditindaklanjuti oleh owner rep. Ubah status di dropdown kanan setiap baris kalau sudah
+          ditangani.
+        </p>
+        <div class="admin-toolbar">
+          <span class="admin-sync-status" id="komplainSyncStatus">Memuat daftar komplain…</span>
+          <button class="admin-add-btn admin-refresh-btn" id="komplainRefreshBtn">Muat Ulang</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="komplainTable">
+            <thead>
+              <tr><th>Tanggal</th><th>Unit</th><th>Nama</th><th>Kategori</th><th>Ringkasan</th><th>Status</th></tr>
+            </thead>
+            <tbody id="komplainTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECK-IN / VERIFIKASI -->
+  <div class="stage" id="stage">
+    <div class="checkin" id="checkinCard">
+      <div class="scan-overlay" id="scanOverlay">
+        <div class="scan-line"></div>
+        <span>Memverifikasi data kepemilikan…</span>
+      </div>
+
+      <div class="checkin-eyebrow">Verifikasi Pemilik</div>
+      <h1>Selamat datang kembali.</h1>
+      <p class="sub">Sebelum kami membantu, mohon konfirmasi identitas Anda sebagai pemilik unit agar kami dapat menyesuaikan layanan dengan data unit dan perjanjian jual beli Anda bersama TJM.</p>
+
+      <div class="field">
+        <label for="ownerName">Nama Pemilik</label>
+        <input type="text" id="ownerName" placeholder="Sesuai data akta kepemilikan">
+      </div>
+      <div class="field">
+        <label for="ownerUnit">Nomor Unit</label>
+        <input type="text" id="ownerUnit" placeholder="Contoh: 12A">
+      </div>
+      <div class="field">
+        <label for="ownerPhone">Nomor HP Terdaftar</label>
+        <input type="tel" id="ownerPhone" placeholder="Contoh: 0812xxxxxxx">
+      </div>
+
+      <div class="keycard">
+        <div>
+          <div class="kc-label">Status</div>
+          <div class="kc-value" id="kcStatus">Menunggu Input</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="kc-label">Sistem</div>
+          <div class="kc-value">TJM-OWN</div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="verifyBtn">Verifikasi Kepemilikan</button>
+      <div class="error-msg" id="errorMsg"></div>
+      <p class="verify-note">Data Anda dicocokkan dengan basis data unit dan arsip perjanjian jual beli (PPJB) yang terdaftar di TJM.</p>
+    </div>
+  </div>
+
+  <!-- APLIKASI UTAMA -->
+  <div class="app" id="app">
+    <div class="app-grid">
+      <div class="sidebar">
+        <div class="profile-card">
+          <div class="profile-eyebrow">Profil Pemilik</div>
+          <div class="profile-name" id="profileName">—</div>
+          <div class="profile-row"><span>Unit</span><span id="profileUnit">—</span></div>
+          <div class="profile-row"><span>No. HP</span><span id="profilePhone">—</span></div>
+          <div class="profile-row"><span>Tipe</span><span id="profileType">—</span></div>
+          <div class="profile-row"><span>Lantai</span><span id="profileFloor">—</span></div>
+          <div class="profile-row"><span>Skema Bagi Hasil</span><span id="profileScheme">—</span></div>
+        </div>
+
+        <div class="profile-card" id="unitLainCard" style="display:none;">
+          <div class="profile-eyebrow">Unit Lain yang Anda Miliki</div>
+          <div id="unitLainList"></div>
+        </div>
+
+        <div class="profile-card points-card">
+          <div class="profile-eyebrow">Poin Menginap Tahun Ini</div>
+          <div class="points-remaining"><span id="poinSisa">—</span><span class="points-unit">poin tersisa</span></div>
+          <div class="points-bar-track"><div class="points-bar-fill" id="poinBarFill"></div></div>
+          <div class="profile-row" style="border-top:none; padding-top:6px;"><span>Terpakai / Total</span><span id="poinTerpakaiTotal">—</span></div>
+          <p class="points-note" id="poinGabunganNote" style="display:none; color:var(--brass-bright);"></p>
+          <p class="points-note">1 poin = 1 malam (hari biasa) · 2 poin = 1 malam (weekend) · 3 poin = 1 malam (peak season/hari besar). Poin hangus tiap akhir tahun.</p>
+        </div>
+
+        <div class="profile-card">
+          <div class="profile-eyebrow">Ringkasan Perjanjian (PPJB)</div>
+          <div class="profile-row" style="border-top:none; padding-top:0;"><span>No. Perjanjian</span><span id="profileAgreementNo">—</span></div>
+          <div class="profile-row"><span>Tanggal</span><span id="profileAgreementDate">—</span></div>
+          <div class="profile-row"><span>Masa Berlaku</span><span id="profileAgreementTerm">—</span></div>
+          <div class="profile-row"><span>Jatah Menginap</span><span id="profileAgreementStay">—</span></div>
+        </div>
+
+        <div class="quick-actions">
+          <div class="qa-label">Aksi Cepat</div>
+          <button class="qa-btn" data-prompt="Saya ingin memesan kamar untuk menginap. Tolong bantu prosesnya.">
+            <span class="qa-icon">🛎️</span> Pesan Kamar untuk Menginap
+          </button>
+          <button class="qa-btn" data-prompt="Saya butuh layanan antar jemput bandara. Tolong bantu aturkan.">
+            <span class="qa-icon">🚐</span> Antar Jemput Bandara
+          </button>
+          <button class="qa-btn" data-prompt="Saya ingin menanyakan laporan dan skema bagi hasil unit saya bulan ini.">
+            <span class="qa-icon">📊</span> Tanya Bagi Hasil
+          </button>
+          <button class="qa-btn" data-prompt="Saya ingin mengajukan komplain terkait unit atau layanan.">
+            <span class="qa-icon">⚠️</span> Ajukan Komplain
+          </button>
+        </div>
+
+        <button class="signout" id="signoutBtn">Keluar dari sesi</button>
+      </div>
+
+      <div class="chat-panel">
+        <div class="chat-header">
+          <div class="avatar">🛎️</div>
+          <div>
+            <b>Concierge AI — Le Aman Bali</b>
+            <small>Siap membantu 24 jam</small>
+          </div>
+        </div>
+        <div class="chat-log" id="chatLog"></div>
+        <div class="chat-input">
+          <textarea id="chatInput" rows="1" placeholder="Tulis pesan Anda…"></textarea>
+          <button class="send-btn" id="sendBtn">Kirim</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ---------- Konfigurasi & pemanggil API chat AI ----------
+  // Aplikasi mencoba 2 cara memanggil Claude, berurutan:
+  // 1) Panggilan langsung ke Anthropic API — otomatis berfungsi HANYA saat file ini dibuka
+  //    di dalam preview Claude.ai (Anthropic mengizinkan ini khusus di sana).
+  // 2) Kalau cara pertama gagal (mis. karena file sudah di-hosting sendiri), aplikasi mencoba
+  //    memanggil CHAT_ENDPOINT di bawah ini — proxy aman (Netlify Function) yang menyimpan
+  //    API key di server. Lihat CARA-AKTIFKAN-CHAT-AI.md untuk cara mengaktifkannya.
+  const CONFIG = {
+    CHAT_ENDPOINT: "/.netlify/functions/chat",
+    NOTIFY_ENDPOINT: "/.netlify/functions/notify",
+    POINTS_ENDPOINT: "/.netlify/functions/points",
+    COMPLAINTS_ENDPOINT: "/.netlify/functions/complaints",
+    // Untuk menyimpan riwayat chat ke Google Sheets lewat Google Form (tanpa server tambahan).
+    // Kosongkan (biarkan "") kalau belum ingin mengaktifkan fitur ini.
+    // Lihat CARA-AKTIFKAN-SIMPAN-RIWAYAT-CHAT.md untuk cara mengisi nilai-nilai di bawah ini.
+    CHATLOG_FORM_URL: "", // contoh: "https://docs.google.com/forms/d/e/1FAIpQLS.../formResponse"
+    CHATLOG_ENTRIES: {
+      nama: "",       // contoh: "entry.111111111"
+      unit: "",       // contoh: "entry.222222222"
+      phone: "",      // contoh: "entry.333333333"
+      transkrip: ""   // contoh: "entry.444444444"
+    }
+  };
+
+  async function callClaudeAPI(payload){
+    try{
+      const r1 = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if(r1.ok){
+        const data = await r1.json();
+        if(data && !data.error) return data;
+      }
+    }catch(e1){ /* lanjut coba proxy */ }
+
+    const r2 = await fetch(CONFIG.CHAT_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data2 = await r2.json();
+    if(data2 && data2.error) throw new Error(typeof data2.error === 'string' ? data2.error : JSON.stringify(data2.error));
+    return data2;
+  }
+
+  const KATEGORI_LABEL = {
+    booking_kamar: "Pemesanan Kamar",
+    antar_jemput: "Antar Jemput Bandara",
+    bagi_hasil: "Permintaan Info Bagi Hasil",
+    komplain: "Komplain"
+  };
+
+  const SUB_KATEGORI_KOMPLAIN_LABEL = {
+    administrasi_legal: "Administrasi & Legal",
+    keuangan: "Keuangan",
+    operasional_hotel: "Layanan Operasional Hotel",
+    lain_lain: "Lain-lain"
+  };
+
+  // Benar-benar mengirim notifikasi WhatsApp ke tim terkait lewat Netlify Function "notify",
+  // mencatat komplain secara PERMANEN (Netlify Blobs) lewat Function "complaints" supaya bisa
+  // ditindaklanjuti, dan (kalau booking_kamar sudah dikonfirmasi) memotong poin permanen lewat
+  // Netlify Function "points".
+  async function forwardToTeam(input){
+    const isKomplain = input.kategori === 'komplain';
+    const subLabel = isKomplain ? (SUB_KATEGORI_KOMPLAIN_LABEL[input.sub_kategori] || 'Lain-lain') : null;
+    const label = isKomplain ? `Komplain — ${subLabel}` : (KATEGORI_LABEL[input.kategori] || input.kategori);
+
+    try{
+      const res = await fetch(CONFIG.NOTIFY_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kategori: input.kategori,
+          subKategori: input.sub_kategori || null,
+          ringkasan: input.ringkasan,
+          pemilik: {
+            nama: currentOwner.name,
+            unit: currentOwner.unit,
+            phone: currentOwner.phone
+          }
+        })
+      });
+      const result = await res.json().catch(()=>({}));
+      if(res.ok && result && result.success){
+        addMessage('ai', `✅ Permintaan (${label}) sudah diteruskan via WhatsApp ke tim terkait.`);
+      }else{
+        addMessage('ai', `⚠️ Permintaan (${label}) dicatat, tapi notifikasi WhatsApp otomatis belum aktif di sistem ini. Admin perlu menyelesaikan setup (lihat CARA-AKTIFKAN-NOTIFIKASI-WA.md).`);
+      }
+    }catch(err){
+      addMessage('ai', `⚠️ Permintaan (${label}) dicatat, tapi notifikasi WhatsApp otomatis belum aktif di sistem ini.`);
+    }
+
+    // Komplain: simpan catatan PERMANEN (bukan cuma notifikasi sekali lewat) supaya owner rep
+    // bisa memantau & menindaklanjuti statusnya lewat panel Admin.
+    if(isKomplain){
+      try{
+        await fetch(CONFIG.COMPLAINTS_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            unit: currentOwner.unit,
+            nama: currentOwner.name,
+            phone: currentOwner.phone,
+            subKategori: input.sub_kategori || 'lain_lain',
+            ringkasan: input.ringkasan
+          })
+        });
+      }catch(err){ /* notifikasi WA di atas tetap terkirim meski pencatatan gagal; tidak perlu ganggu pemilik lagi */ }
+    }
+
+    // Potong poin secara permanen, HANYA kalau AI sudah menghitung poin_dipakai (artinya pemilik
+    // sudah benar-benar konfirmasi booking_kamar — lihat aturan di system prompt).
+    if(input.kategori === 'booking_kamar' && input.poin_dipakai && input.poin_dipakai > 0){
+      try{
+        const res2 = await fetch(CONFIG.POINTS_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            unit: currentOwner.unit,
+            tambahPoin: input.poin_dipakai,
+            catatan: input.ringkasan
+          })
+        });
+        const result2 = await res2.json().catch(()=>({}));
+        if(res2.ok && result2 && result2.success){
+          currentOwner.poinOtomatisTerpakai = result2.poinOtomatisTerpakai;
+          renderPoinCard(); // update tampilan kartu poin di sidebar seketika, tanpa perlu refresh
+        }else{
+          addMessage('ai', `⚠️ Pemesanan sudah diteruskan, tapi pemotongan poin otomatis belum aktif di sistem ini (perlu setup Netlify Blobs oleh admin). Poin akan disesuaikan manual oleh tim.`);
+        }
+      }catch(err){
+        addMessage('ai', `⚠️ Pemesanan sudah diteruskan, tapi pemotongan poin otomatis gagal dilakukan. Poin akan disesuaikan manual oleh tim.`);
+      }
+    }
+  }
+
+  // ---------- Database pemilik unit ----------
+  // Data di bawah ini TERSIMPAN LANGSUNG di dalam file aplikasi ini.
+  // Untuk memperbarui: gunakan panel Admin di web (tombol "Admin" di kanan atas) —
+  // impor file Excel, lalu unduh ulang aplikasi. Jangan edit blok ini secara manual.
+  const OWNER_DB_FALLBACK = /*OWNER_DATA_START*/[
+    {
+      "name": "Andi Wijaya", "unit": "12A", "phone": "081234567801",
+      "type": "Studio Deluxe", "floor": "12", "scheme": "70/30",
+      "poinTahunan": 30, "poinTerpakai": 8,
+      "agreement": {
+        "no": "PPJB/LAB/2021-0112", "tanggal": "14 Mei 2021", "masaBerlaku": "25 tahun (s/d 2046)",
+        "jatahMenginap": "30 poin/tahun",
+        "klausul": "Pemilik berhak atas 70% pendapatan sewa bersih unit setelah dikurangi biaya operasional; TJM berhak 30% sebagai fee pengelolaan. Jatah menginap gratis dihitung dengan sistem poin: 30 poin per tahun, hangus jika tidak terpakai sampai akhir tahun (di luar peak season 20 Des-5 Jan yang punya aturan poin sendiri). Pembayaran bagi hasil dilakukan setiap tanggal 10 bulan berikutnya."
+      }
+    },
+    {
+      "name": "Siti Rahmawati", "unit": "8C", "phone": "081234567802",
+      "type": "One Bedroom", "floor": "8", "scheme": "65/35",
+      "poinTahunan": 30, "poinTerpakai": 0,
+      "agreement": {
+        "no": "PPJB/LAB/2020-0087", "tanggal": "3 Februari 2020", "masaBerlaku": "25 tahun (s/d 2045)",
+        "jatahMenginap": "30 poin/tahun",
+        "klausul": "Pemilik berhak atas 65% pendapatan sewa bersih; TJM 35%. Jatah menginap gratis dihitung dengan sistem poin: 30 poin per tahun, hangus jika tidak terpakai sampai akhir tahun. Renovasi unit oleh pemilik wajib mendapat persetujuan tertulis TJM terlebih dahulu."
+      }
+    },
+    {
+      "name": "Budi Santoso", "unit": "20B", "phone": "081234567803",
+      "type": "Penthouse", "floor": "20", "scheme": "60/40",
+      "poinTahunan": 30, "poinTerpakai": 21,
+      "agreement": {
+        "no": "PPJB/LAB/2022-0201", "tanggal": "9 September 2022", "masaBerlaku": "30 tahun (s/d 2052)",
+        "jatahMenginap": "30 poin/tahun",
+        "klausul": "Pemilik berhak atas 60% pendapatan sewa bersih; TJM 40% (skema penthouse dengan layanan premium). Jatah menginap gratis dihitung dengan sistem poin: 30 poin per tahun, hangus jika tidak terpakai sampai akhir tahun. Biaya sinking fund ditanggung dari bagian pendapatan pemilik."
+      }
+    },
+    {
+      "name": "Linda Kusuma", "unit": "5D", "phone": "081234567804",
+      "type": "Studio Standard", "floor": "5", "scheme": "70/30",
+      "poinTahunan": 30, "poinTerpakai": 5,
+      "agreement": {
+        "no": "PPJB/LAB/2019-0045", "tanggal": "21 November 2019", "masaBerlaku": "25 tahun (s/d 2044)",
+        "jatahMenginap": "30 poin/tahun",
+        "klausul": "Pemilik berhak atas 70% pendapatan sewa bersih; TJM 30%. Jatah menginap gratis dihitung dengan sistem poin: 30 poin per tahun, hangus jika tidak terpakai sampai akhir tahun. Perjanjian memuat klausul perpanjangan otomatis 10 tahun kecuali ada pemberitahuan tertulis 1 tahun sebelum berakhir."
+      }
+    },
+    {
+      "name": "Hendra Gunawan", "unit": "15A", "phone": "081234567805",
+      "type": "One Bedroom Deluxe", "floor": "15", "scheme": "65/35",
+      "poinTahunan": 30, "poinTerpakai": 12,
+      "agreement": {
+        "no": "PPJB/LAB/2021-0139", "tanggal": "30 Juni 2021", "masaBerlaku": "25 tahun (s/d 2046)",
+        "jatahMenginap": "30 poin/tahun",
+        "klausul": "Pemilik berhak atas 65% pendapatan sewa bersih; TJM 35%. Jatah menginap gratis dihitung dengan sistem poin: 30 poin per tahun, hangus jika tidak terpakai sampai akhir tahun. Pemilik pernah mengajukan komplain kebocoran AC pada Maret 2024 yang telah diselesaikan tim maintenance."
+      }
+    },
+    {
+      "name": "Maria Christina", "unit": "3B", "phone": "081234567806",
+      "type": "Studio Standard", "floor": "3", "scheme": "70/30",
+      "poinTahunan": 30, "poinTerpakai": 30,
+      "agreement": {
+        "no": "PPJB/LAB/2018-0019", "tanggal": "8 Januari 2018", "masaBerlaku": "25 tahun (s/d 2043)",
+        "jatahMenginap": "30 poin/tahun",
+        "klausul": "Pemilik berhak atas 70% pendapatan sewa bersih; TJM 30%. Jatah menginap gratis dihitung dengan sistem poin: 30 poin per tahun, hangus jika tidak terpakai sampai akhir tahun. Unit termasuk dalam program renovasi massal tahun 2025 yang dibiayai bersama sesuai proporsi kepemilikan."
+      }
+    }
+  ]/*OWNER_DATA_END*/;
+
+  let OWNER_DB = OWNER_DB_FALLBACK.slice();
+  let dbSource = "file"; // "file" | "excel-import"
+
+  function rowToOwner(row){
+    return {
+      name: String(row.name || "").trim(), unit: String(row.unit || "").trim(), phone: String(row.phone || "").trim(),
+      ownerId: String(row.owner_id || "").trim(), // opsional: kalau diisi, dipakai untuk mengelompokkan unit-unit milik pemilik yang sama
+      type: String(row.type || "").trim(), floor: String(row.floor || "").trim(), scheme: String(row.scheme || "").trim(),
+      poinTahunan: parseInt(row.poin_tahunan, 10) || 30,
+      poinTerpakai: parseInt(row.poin_terpakai, 10) || 0,
+      agreement: {
+        no: String(row.agreement_no || "").trim(), tanggal: String(row.agreement_tanggal || "").trim(),
+        masaBerlaku: String(row.agreement_masaBerlaku || "").trim(), jatahMenginap: String(row.agreement_jatahMenginap || "").trim(),
+        klausul: String(row.agreement_klausul || "").trim()
+      }
+    };
+  }
+
+  // Pemetaan judul kolom di file Excel (baris header) -> nama field internal.
+  // Mendukung judul berbahasa Indonesia dari template resmi, DAN nama kolom teknis lama,
+  // supaya file Excel apa pun yang formatnya mirip tetap bisa terbaca.
+  const EXCEL_HEADER_MAP = {
+    "nama pemilik": "name", "nama": "name", "name": "name",
+    "id pemilik": "owner_id", "owner_id": "owner_id", "id_pemilik": "owner_id",
+    "nomor unit": "unit", "unit": "unit", "no unit": "unit", "no. unit": "unit",
+    "nomor hp": "phone", "no hp": "phone", "no. hp": "phone", "phone": "phone", "hp": "phone",
+    "tipe unit": "type", "type": "type", "tipe": "type",
+    "lantai": "floor", "floor": "floor",
+    "skema bagi hasil": "scheme", "scheme": "scheme", "bagi hasil": "scheme",
+    "poin tahunan": "poin_tahunan", "poin_tahunan": "poin_tahunan", "total poin": "poin_tahunan",
+    "poin terpakai tahun ini": "poin_terpakai", "poin_terpakai": "poin_terpakai", "poin terpakai": "poin_terpakai",
+    "no. perjanjian ppjb": "agreement_no", "no perjanjian ppjb": "agreement_no",
+    "nomor perjanjian": "agreement_no", "agreement_no": "agreement_no",
+    "tanggal perjanjian": "agreement_tanggal", "agreement_tanggal": "agreement_tanggal",
+    "masa berlaku": "agreement_masaBerlaku", "agreement_masaberlaku": "agreement_masaBerlaku",
+    "jatah menginap": "agreement_jatahMenginap", "agreement_jatahmenginap": "agreement_jatahMenginap",
+    "ringkasan klausul perjanjian": "agreement_klausul", "ringkasan klausul": "agreement_klausul",
+    "agreement_klausul": "agreement_klausul", "klausul": "agreement_klausul"
+  };
+
+  // Menentukan "kunci pengelompokan pemilik": pakai ID Pemilik kalau diisi admin di Excel,
+  // kalau tidak, fallback otomatis ke nomor HP (dinormalisasi) — supaya baris-baris unit
+  // yang jelas-jelas dipakai nomor HP sama otomatis dianggap milik orang yang sama, walau
+  // admin tidak sempat mengisi kolom ID Pemilik.
+  function ownerGroupKey(owner){
+    if(owner.ownerId) return 'id:' + owner.ownerId.toLowerCase();
+    return 'phone:' + normalizePhone(owner.phone);
+  }
+
+  // Mengambil semua unit lain (di luar unit yang sedang dipakai login) yang tercatat
+  // milik pemilik yang sama, berdasarkan ownerGroupKey di atas.
+  function getUnitLainMilikPemilikSama(owner){
+    const key = ownerGroupKey(owner);
+    return OWNER_DB.filter(o => o.unit !== owner.unit && ownerGroupKey(o) === key);
+  }
+
+  function normalizeHeader(h){
+    return String(h || "").trim().toLowerCase().replace(/\s+/g, " ");
+  }
+
+  // Mengubah 1 baris hasil baca Excel (object dengan key = judul kolom apa adanya)
+  // menjadi object flat berkunci teknis (name, unit, phone, ... agreement_klausul)
+  // sesuai pemetaan EXCEL_HEADER_MAP di atas, lalu siap dioper ke rowToOwner().
+  function excelRowToFlat(rawRow){
+    const flat = {};
+    Object.keys(rawRow).forEach((col)=>{
+      const key = EXCEL_HEADER_MAP[normalizeHeader(col)];
+      if(key) flat[key] = rawRow[col];
+    });
+    return flat;
+  }
+
+  // ---------- Pembaca CSV mandiri (murni JS, TIDAK butuh internet/library luar) ----------
+  // Dipakai sebagai jalur utama untuk file .csv, dan jalur cadangan kalau library pembaca
+  // .xlsx (dimuat dari internet) gagal termuat karena masalah koneksi.
+  function parseCSV(text){
+    const rows = [];
+    let row = [], field = '', inQuotes = false;
+    // hilangkan BOM (byte order mark) yang kadang disisipkan Excel di awal file CSV
+    if(text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    for(let i = 0; i < text.length; i++){
+      const c = text[i];
+      if(inQuotes){
+        if(c === '"'){
+          if(text[i+1] === '"'){ field += '"'; i++; }
+          else inQuotes = false;
+        } else field += c;
+      } else {
+        if(c === '"') inQuotes = true;
+        else if(c === ','){ row.push(field); field = ''; }
+        else if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; }
+        else if(c === '\r'){ /* diabaikan, baris baru ditangani oleh \n */ }
+        else field += c;
+      }
+    }
+    if(field.length > 0 || row.length > 0){ row.push(field); rows.push(row); }
+    return rows.filter(r => r.length > 1 || (r[0] && r[0].trim()));
+  }
+
+  function csvRowsToObjects(rows){
+    if(rows.length === 0) return [];
+    const headers = rows[0];
+    return rows.slice(1).map((r)=>{
+      const obj = {};
+      headers.forEach((h, i)=>{ obj[h] = r[i] !== undefined ? r[i] : ''; });
+      return obj;
+    });
+  }
+
+  function processImportedRows(rawRows){
+    console.log('[Admin] Baris mentah terbaca dari file:', rawRows);
+    if(!rawRows || rawRows.length === 0){
+      throw new Error("File kosong atau tab 'Owners' tidak ditemukan.");
+    }
+    const flatRows = rawRows.map(excelRowToFlat).filter(r => r.unit && String(r.unit).trim());
+    console.log('[Admin] Baris valid setelah pemetaan kolom:', flatRows);
+    if(flatRows.length === 0){
+      throw new Error("Tidak ada baris data yang valid ditemukan — pastikan judul kolom di baris 1 tidak diubah dan kolom 'Nomor Unit' terisi.");
+    }
+    OWNER_DB = flatRows.map(rowToOwner);
+    dbSource = "excel-import";
+    renderAdminTable();
+    alert(`Berhasil! ${OWNER_DB.length} data pemilik terbaca. Silakan periksa tabel di bawah, lalu klik "Unduh Aplikasi Terbaru".`);
+  }
+
+  async function loadOwnerDatabase(){
+    // Data sudah tersedia langsung dari file (OWNER_DB_FALLBACK), tidak perlu fetch jaringan.
+    OWNER_DB = OWNER_DB_FALLBACK.slice();
+    dbSource = "file";
+  }
+
+  const normalize = s => s.trim().toLowerCase().replace(/\s+/g," ");
+  const normalizePhone = s => s.trim().replace(/[\s\-()]/g,"").replace(/^\+62/,"0").replace(/^62/,"0");
+
+  let currentOwner = null;
+  let messages = [];
+
+  const stage = document.getElementById('stage');
+  const app = document.getElementById('app');
+  const checkinCard = document.getElementById('checkinCard');
+  const scanOverlay = document.getElementById('scanOverlay');
+  const errorMsg = document.getElementById('errorMsg');
+  const kcStatus = document.getElementById('kcStatus');
+  const verifyBtn = document.getElementById('verifyBtn');
+
+  document.getElementById('ownerName').addEventListener('input', ()=> kcStatus.textContent = 'Siap Diverifikasi');
+  document.getElementById('ownerUnit').addEventListener('input', ()=> kcStatus.textContent = 'Siap Diverifikasi');
+  document.getElementById('ownerPhone').addEventListener('input', ()=> kcStatus.textContent = 'Siap Diverifikasi');
+
+  (async function init(){
+    verifyBtn.disabled = true;
+    kcStatus.textContent = 'Memuat Basis Data…';
+    await loadOwnerDatabase();
+    verifyBtn.disabled = false;
+    kcStatus.textContent = 'Menunggu Input';
+  })();
+
+  verifyBtn.addEventListener('click', async ()=>{
+    const nameVal = document.getElementById('ownerName').value;
+    const unitVal = document.getElementById('ownerUnit').value;
+    const phoneVal = document.getElementById('ownerPhone').value;
+    errorMsg.classList.remove('show');
+
+    if(!nameVal.trim() || !unitVal.trim() || !phoneVal.trim()){
+      errorMsg.textContent = "Mohon isi nama, nomor unit, dan nomor HP terdaftar terlebih dahulu.";
+      errorMsg.classList.add('show');
+      return;
+    }
+
+    verifyBtn.disabled = true;
+    scanOverlay.classList.add('show');
+
+    await new Promise(r=>setTimeout(r, 1000));
+
+    const match = OWNER_DB.find(o =>
+      normalize(o.unit) === normalize(unitVal) &&
+      normalizePhone(o.phone) === normalizePhone(phoneVal) &&
+      (normalize(o.name).includes(normalize(nameVal)) || normalize(nameVal).includes(normalize(o.name).split(' ')[0]))
+    );
+
+    scanOverlay.classList.remove('show');
+    verifyBtn.disabled = false;
+
+    if(!match){
+      kcStatus.textContent = 'Tidak Cocok';
+      errorMsg.textContent = "Data tidak ditemukan di sistem kami. Periksa kembali ejaan nama, nomor unit, dan nomor HP terdaftar, atau hubungi pengelola di admin@leamanbali-tjm.id jika Anda yakin sudah terdaftar.";
+      errorMsg.classList.add('show');
+      return;
+    }
+
+    currentOwner = match;
+    kcStatus.textContent = 'Terverifikasi';
+    openApp();
+  });
+
+  function openApp(){
+    document.getElementById('profileName').textContent = currentOwner.name;
+    document.getElementById('profileUnit').textContent = currentOwner.unit;
+    document.getElementById('profilePhone').textContent = currentOwner.phone;
+    document.getElementById('profileType').textContent = currentOwner.type;
+    document.getElementById('profileFloor').textContent = currentOwner.floor;
+    document.getElementById('profileScheme').textContent = currentOwner.scheme;
+    document.getElementById('profileAgreementNo').textContent = currentOwner.agreement.no;
+    document.getElementById('profileAgreementDate').textContent = currentOwner.agreement.tanggal;
+    document.getElementById('profileAgreementTerm').textContent = currentOwner.agreement.masaBerlaku;
+    document.getElementById('profileAgreementStay').textContent = currentOwner.agreement.jatahMenginap;
+
+    // Deteksi unit lain yang tercatat milik pemilik yang sama (lihat ownerGroupKey/getUnitLainMilikPemilikSama)
+    currentOwner.unitLain = getUnitLainMilikPemilikSama(currentOwner);
+    renderUnitLainCard();
+
+    currentOwner.poinOtomatisTerpakai = 0; // diisi ulang setelah fetch dari Netlify Blobs (lihat syncPoinOtomatisFromServer)
+    currentOwner.unitLain.forEach(u => { u.poinOtomatisTerpakai = 0; });
+    renderPoinCard();
+    syncPoinOtomatisFromServer(); // usaha terbaik; kalau gagal (belum di-setup), kartu tetap tampil dari data Excel
+
+    stage.style.display = 'none';
+    app.classList.add('show');
+
+    messages = [];
+    document.getElementById('chatLog').innerHTML = '';
+    const infoUnitLain = currentOwner.unitLain.length > 0
+      ? ` Sistem juga mencatat Anda memiliki ${currentOwner.unitLain.length} unit lain (${currentOwner.unitLain.map(u=>u.unit).join(', ')}).`
+      : '';
+    addMessage('ai', `Selamat datang, ${currentOwner.name.split(' ')[0]}. Identitas Anda sebagai pemilik Unit ${currentOwner.unit} di Le Aman Bali sudah terverifikasi, termasuk data perjanjian PPJB Anda (No. ${currentOwner.agreement.no}).${infoUnitLain} Ada yang bisa saya bantu hari ini — pemesanan kamar untuk menginap, antar jemput bandara, informasi bagi hasil, atau komplain?`);
+  }
+
+  // Tampilkan/sembunyikan kartu "Unit Lain yang Anda Miliki" di sidebar
+  function renderUnitLainCard(){
+    const card = document.getElementById('unitLainCard');
+    const list = document.getElementById('unitLainList');
+    if(!currentOwner.unitLain || currentOwner.unitLain.length === 0){
+      card.style.display = 'none';
+      return;
+    }
+    card.style.display = 'block';
+    list.innerHTML = '';
+    currentOwner.unitLain.forEach(u=>{
+      const row = document.createElement('div');
+      row.className = 'profile-row';
+      row.innerHTML = `<span>Unit ${escapeHtml(u.unit)}</span><span>${escapeHtml(u.type)}</span>`;
+      list.appendChild(row);
+    });
+  }
+
+  // Render ulang kartu "Poin Menginap" — DIGABUNGKAN dari SEMUA unit milik pemilik yang sama
+  // (unit yang sedang dipakai login + semua unit lain hasil deteksi ownerGroupKey), supaya
+  // pemilik dengan beberapa unit melihat TOTAL poin yang sesungguhnya tersedia untuk mereka.
+  function renderPoinCard(){
+    const semuaUnit = [currentOwner, ...(currentOwner.unitLain || [])];
+    const poinTahunan = semuaUnit.reduce((sum, u) => sum + (u.poinTahunan || 30), 0);
+    const poinTerpakai = semuaUnit.reduce((sum, u) => sum + (u.poinTerpakai || 0) + (u.poinOtomatisTerpakai || 0), 0);
+    const poinSisa = Math.max(poinTahunan - poinTerpakai, 0);
+
+    document.getElementById('poinSisa').textContent = poinSisa;
+    document.getElementById('poinTerpakaiTotal').textContent = `${poinTerpakai} / ${poinTahunan} poin`;
+    const persenTerpakai = poinTahunan > 0 ? Math.min((poinTerpakai / poinTahunan) * 100, 100) : 0;
+    const fillEl = document.getElementById('poinBarFill');
+    fillEl.style.width = persenTerpakai + '%';
+    fillEl.style.background = persenTerpakai >= 85
+      ? 'linear-gradient(90deg, #C4707A, #E08A94)'
+      : 'linear-gradient(90deg, var(--brass), var(--brass-bright))';
+
+    // label kecil menjelaskan ini gabungan dari berapa unit, kalau pemilik punya >1 unit
+    const noteEl = document.getElementById('poinGabunganNote');
+    if(semuaUnit.length > 1){
+      noteEl.style.display = 'block';
+      noteEl.textContent = `Gabungan dari ${semuaUnit.length} unit yang Anda miliki (${semuaUnit.map(u=>u.unit).join(', ')}).`;
+    }else{
+      noteEl.style.display = 'none';
+    }
+  }
+
+  // Ambil jumlah poin yang sudah terpotong otomatis tahun ini (tersimpan permanen di Netlify Blobs),
+  // untuk SETIAP unit yang dimiliki pemilik ini (unit login + semua unit lain), lalu render ulang
+  // kartu poin gabungan. Kalau fitur ini belum di-setup di server, gagal secara diam-diam.
+  async function syncPoinOtomatisFromServer(){
+    if(!currentOwner) return;
+    const semuaUnit = [currentOwner, ...(currentOwner.unitLain || [])];
+    await Promise.all(semuaUnit.map(async (u)=>{
+      try{
+        const res = await fetch(`${CONFIG.POINTS_ENDPOINT}?unit=${encodeURIComponent(u.unit)}`);
+        if(!res.ok) return;
+        const data = await res.json();
+        if(typeof data.poinOtomatisTerpakai === 'number'){
+          u.poinOtomatisTerpakai = data.poinOtomatisTerpakai;
+        }
+      }catch(err){ /* diamkan, fitur ini opsional */ }
+    }));
+    renderPoinCard();
+  }
+
+  // ---------- Simpan riwayat chat ke Google Sheets (lewat Google Form) saat sesi berakhir ----------
+  // Kalau CONFIG.CHATLOG_FORM_URL belum diisi, fungsi ini tidak melakukan apa-apa (aman, tidak error).
+  function buildTranscript(){
+    return Array.from(document.querySelectorAll('#chatLog .msg:not(.typing)')).map(el=>{
+      const peran = el.classList.contains('user') ? 'Pemilik' : 'AI';
+      return `[${peran}] ${el.textContent.trim()}`;
+    }).join('\n');
+  }
+
+  function saveChatLog(){
+    if(!currentOwner) return; // belum ada sesi aktif, tidak ada yang perlu disimpan
+    if(!CONFIG.CHATLOG_FORM_URL || !CONFIG.CHATLOG_ENTRIES.transkrip) return; // fitur belum diaktifkan
+
+    const transkrip = buildTranscript();
+    if(!transkrip) return; // tidak ada percakapan sama sekali, tidak perlu kirim baris kosong
+
+    const formData = new URLSearchParams();
+    if(CONFIG.CHATLOG_ENTRIES.nama) formData.append(CONFIG.CHATLOG_ENTRIES.nama, currentOwner.name);
+    if(CONFIG.CHATLOG_ENTRIES.unit) formData.append(CONFIG.CHATLOG_ENTRIES.unit, currentOwner.unit);
+    if(CONFIG.CHATLOG_ENTRIES.phone) formData.append(CONFIG.CHATLOG_ENTRIES.phone, currentOwner.phone);
+    formData.append(CONFIG.CHATLOG_ENTRIES.transkrip, transkrip);
+
+    // "no-cors" + sendBeacon: pengiriman "fire and forget", tidak menunggu/butuh baca respons
+    // (Google Form memang tidak mengizinkan dibaca dari luar, tapi datanya tetap masuk ke Sheet).
+    try{
+      if(navigator.sendBeacon){
+        const blob = new Blob([formData.toString()], { type: 'application/x-www-form-urlencoded' });
+        navigator.sendBeacon(CONFIG.CHATLOG_FORM_URL, blob);
+      }else{
+        fetch(CONFIG.CHATLOG_FORM_URL, { method: 'POST', mode: 'no-cors', body: formData });
+      }
+    }catch(err){ /* diamkan saja, jangan ganggu pengalaman pemilik unit kalau gagal kirim log */ }
+  }
+
+  // Simpan otomatis kalau tab/browser ditutup tanpa klik "Keluar dari sesi" (usaha terbaik, tidak selalu 100% terkirim)
+  window.addEventListener('pagehide', saveChatLog);
+
+  document.getElementById('signoutBtn').addEventListener('click', ()=>{
+    saveChatLog();
+    currentOwner = null;
+    app.classList.remove('show');
+    stage.style.display = 'flex';
+    document.getElementById('ownerName').value = '';
+    document.getElementById('ownerUnit').value = '';
+    document.getElementById('ownerPhone').value = '';
+    kcStatus.textContent = 'Menunggu Input';
+    errorMsg.classList.remove('show');
+  });
+
+  document.querySelectorAll('.qa-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const p = btn.getAttribute('data-prompt');
+      document.getElementById('chatInput').value = p;
+      sendMessage();
+    });
+  });
+
+  const chatLog = document.getElementById('chatLog');
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+
+  function addMessage(role, text){
+    const div = document.createElement('div');
+    div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
+    div.textContent = text;
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return div;
+  }
+
+  function addTyping(){
+    const div = document.createElement('div');
+    div.className = 'msg typing';
+    div.id = 'typingIndicator';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+  function removeTyping(){
+    const t = document.getElementById('typingIndicator');
+    if(t) t.remove();
+  }
+
+  // Menampilkan kartu konfirmasi booking dengan TOMBOL nyata di dalam chat.
+  // Poin HANYA terpotong kalau pemilik sendiri mengklik tombol ini — AI tidak bisa
+  // memicu pemotongan poin lewat kata-kata saja, jadi tidak ada celah salah tafsir.
+  function renderBookingConfirmCard(input, callId){
+    const div = document.createElement('div');
+    div.className = 'msg ai booking-confirm-card';
+    div.innerHTML = `
+      <div class="confirm-card-title">📋 Konfirmasi Pemesanan Kamar</div>
+      <div class="confirm-card-summary"></div>
+      <div class="confirm-card-points">Poin yang akan terpakai: <b>${Number(input.poin_dibutuhkan) || 0} poin</b></div>
+      <button type="button" class="confirm-card-btn">✅ Konfirmasi &amp; Pesan Sekarang</button>
+      <div class="confirm-card-status" style="display:none;"></div>
+    `;
+    div.querySelector('.confirm-card-summary').textContent = input.ringkasan || '';
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+
+    const btn = div.querySelector('.confirm-card-btn');
+    const statusEl = div.querySelector('.confirm-card-status');
+
+    btn.addEventListener('click', async ()=>{
+      btn.disabled = true; // dicegah sejak awal klik (sinkron), supaya klik ganda tidak memicu 2x proses
+      btn.textContent = 'Memproses...';
+      try{
+        await forwardToTeam({
+          kategori: 'booking_kamar',
+          ringkasan: input.ringkasan,
+          poin_dipakai: Number(input.poin_dibutuhkan) || 0
+        });
+        btn.style.display = 'none';
+        statusEl.style.display = 'block';
+        statusEl.textContent = '✅ Pemesanan dikonfirmasi — poin sudah terpotong dan diteruskan ke tim front office.';
+        div.classList.add('confirmed');
+      }catch(err){
+        btn.disabled = false;
+        btn.textContent = '✅ Konfirmasi & Pesan Sekarang';
+        statusEl.style.display = 'block';
+        statusEl.textContent = '⚠️ Gagal memproses, silakan coba klik lagi.';
+      }
+    });
+  }
+
+  chatInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' && !e.shiftKey){
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  chatInput.addEventListener('input', ()=>{
+    chatInput.style.height = 'auto';
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 110) + 'px';
+  });
+  sendBtn.addEventListener('click', sendMessage);
+
+  async function sendMessage(){
+    const text = chatInput.value.trim();
+    if(!text || !currentOwner) return;
+
+    addMessage('user', text);
+    messages.push({ role: 'user', content: text });
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    sendBtn.disabled = true;
+
+    addTyping();
+
+    const ag = currentOwner.agreement;
+    const semuaUnitMilikPemilik = [currentOwner, ...(currentOwner.unitLain || [])];
+    const totalPoinTahunanGabungan = semuaUnitMilikPemilik.reduce((sum, u) => sum + (u.poinTahunan || 30), 0);
+    const totalPoinTerpakaiGabungan = semuaUnitMilikPemilik.reduce((sum, u) => sum + (u.poinTerpakai || 0) + (u.poinOtomatisTerpakai || 0), 0);
+    const totalPoinSisaGabungan = Math.max(totalPoinTahunanGabungan - totalPoinTerpakaiGabungan, 0);
+    const daftarUnitLainText = (currentOwner.unitLain || []).length > 0
+      ? currentOwner.unitLain.map(u => `Unit ${u.unit} (${u.type}, lantai ${u.floor}, PPJB No. ${u.agreement.no}, poin tahunan ${u.poinTahunan || 30})`).join('; ')
+      : "Tidak ada — pemilik ini hanya tercatat memiliki 1 unit.";
+
+    const systemPrompt = `Anda adalah "Concierge AI Le Aman Bali", asisten layanan pelanggan berbasis AI untuk pemilik unit di properti Le Aman Bali yang dikelola oleh TJM. Anda sedang berbicara dengan pemilik unit yang identitasnya SUDAH terverifikasi (nama + nomor unit + nomor HP terdaftar) terhadap basis data pengelola:
+
+DATA PEMILIK & UNIT (unit yang sedang dipakai untuk login saat ini)
+- Nama: ${currentOwner.name}
+- Nomor Unit: ${currentOwner.unit}
+- Nomor HP Terdaftar: ${currentOwner.phone}
+- Tipe Unit: ${currentOwner.type}
+- Lantai: ${currentOwner.floor}
+- Skema Bagi Hasil: ${currentOwner.scheme} (persentase pemilik/TJM)
+
+UNIT LAIN YANG JUGA TERCATAT MILIK PEMILIK YANG SAMA (kalau ada)
+- ${daftarUnitLainText}
+- PENTING: pemilik ini BISA memiliki lebih dari 1 unit sekaligus. Kalau ada unit lain di atas,
+  perlakukan pemilik sebagai pemilik SEMUA unit tersebut (bukan cuma unit yang dipakai login) —
+  misalnya kalau mereka bertanya "unit saya" secara umum, atau minta laporan bagi hasil, tawarkan
+  untuk mencakup seluruh unit mereka, bukan cuma unit yang sedang dipakai login.
+
+SISTEM POIN MENGINAP TAHUN INI — DIGABUNGKAN DARI SELURUH UNIT MILIK PEMILIK INI
+- Total Poin Tahunan (gabungan ${semuaUnitMilikPemilik.length} unit): ${totalPoinTahunanGabungan} poin
+- Poin Sudah Terpakai Tahun Ini (gabungan): ${totalPoinTerpakaiGabungan} poin
+- Sisa Poin (gabungan, INI yang harus Anda pakai saat menjawab "berapa poin saya"): ${totalPoinSisaGabungan} poin
+- Cara hitung kebutuhan poin per malam menginap:
+  • Hari biasa (Senin-Kamis) = 1 poin per malam
+  • Weekend (Jumat & Sabtu malam) = 2 poin per malam
+  • Malam tahun baru, hari besar/libur nasional, dan periode peak season (termasuk periode spesifik yang mungkin disebut di klausul perjanjian pemilik ini, mis. akhir Desember-awal Januari) = 3 poin per malam
+- Poin HANGUS di akhir tahun kalender kalau tidak terpakai — selalu ingatkan pemilik soal ini secara halus kalau sisa poinnya masih banyak dan tahun akan segera berakhir, atau kalau mereka menanyakan sisa poin.
+- Angka "Poin Terpakai" di atas adalah data terakhir yang tercatat sistem (sebagian di-update manual oleh admin, sebagian otomatis dari konfirmasi booking di chat) — kalau pemilik baru saja menginap dan merasa poinnya belum ter-update, sarankan konfirmasi ke tim front office.
+- CATATAN TEKNIS PENTING (jangan disampaikan verbatim ke pemilik, cukup jadi pengetahuan Anda): kalau pemilik konfirmasi booking lewat tombol di chat, sistem secara teknis memotong poin dari kuota UNIT YANG SEDANG DIPAKAI LOGIN (${currentOwner.unit}), bukan dari unit lain yang mereka miliki — meski begitu, angka "sisa poin" yang Anda sampaikan ke pemilik tetaplah angka GABUNGAN seluruh unit, karena itulah yang benar-benar relevan bagi mereka.
+
+DATA HASIL SCAN PERJANJIAN PENGIKATAN JUAL BELI (PPJB) ANTARA TJM DAN PEMILIK INI (untuk unit ${currentOwner.unit})
+- Nomor Perjanjian: ${ag.no}
+- Tanggal Perjanjian: ${ag.tanggal}
+- Masa Berlaku: ${ag.masaBerlaku}
+- Jatah Menginap Gratis: ${ag.jatahMenginap}
+- Ringkasan Klausul Relevan: ${ag.klausul}
+
+Gunakan data perjanjian di atas sebagai rujukan utama saat pemilik bertanya tentang hak, kewajiban, skema bagi hasil, jatah menginap, atau ketentuan lain — jawaban Anda harus konsisten dengan klausul spesifik pemilik ini, bukan asumsi umum.
+
+Tugas Anda adalah membantu pemilik unit ini terkait:
+1. Pemesanan kamar untuk menginap — pemilik BOLEH menginap di kamar mana pun yang tersedia di properti (tidak harus unit miliknya sendiri, misalnya unitnya sedang disewakan tamu lain atau ingin tipe kamar berbeda). Tanyakan tanggal check-in/check-out, jumlah tamu, dan preferensi tipe kamar. Untuk setiap malam yang diminta, HITUNG kebutuhan poin berdasarkan hari (hari biasa/weekend/peak season, lihat aturan Sistem Poin di atas), jumlahkan totalnya, lalu bandingkan dengan Sisa Poin pemilik — kalau cukup, sampaikan estimasi poin yang akan terpakai dan sisa poin setelahnya; kalau tidak cukup atau pemilik ingin menginap di luar kuota poin, jelaskan bahwa kelebihannya akan dikenakan tarif kamar normal (tim front office yang akan konfirmasi tarif pasti). Konfirmasikan permintaan akan diteruskan ke tim front office untuk dicarikan kamar yang tersedia dan diblokir di sistem reservasi.
+1. Pemesanan kamar untuk menginap — pemilik BOLEH menginap di kamar mana pun yang tersedia di properti. Tanyakan tanggal check-in/check-out, jumlah tamu, dan preferensi tipe kamar. HITUNG kebutuhan poin per malam (hari biasa=1, weekend=2, peak season/hari besar=3), jumlahkan totalnya. Setelah semua detail lengkap, WAJIB panggil tool "ajukan_konfirmasi_booking" (BUKAN teruskan_ke_tim) — tool ini akan menampilkan kartu konfirmasi dengan tombol ke pemilik; poin HANYA akan terpotong kalau pemilik sendiri yang mengklik tombol itu, jadi Anda TIDAK perlu (dan TIDAK BISA) memastikan konfirmasi lewat kata-kata — cukup tampilkan kartunya kapan pun detail sudah lengkap dan biarkan pemilik yang memutuskan lewat tombol.
+2. Antar jemput bandara (tanyakan bandara asal, nomor penerbangan, tanggal & jam tiba/berangkat, jumlah penumpang; informasikan biaya layanan bila relevan sebagai estimasi umum, lalu konfirmasi akan diteruskan ke tim transportasi).
+3. Pertanyaan seputar bagi hasil — jelaskan berdasarkan skema dan klausul perjanjian spesifik pemilik ini, jelaskan bahwa laporan rinci bulanan dikirim oleh tim keuangan, dan tawarkan untuk meneruskan permintaan laporan detail ke tim terkait.
+4. Komplain (dengarkan dengan empati, minta detail unit/masalah/waktu kejadian, sampaikan akan segera ditindaklanjuti oleh tim terkait, dan berikan estimasi waktu tindak lanjut yang wajar; jika klausul perjanjian relevan seperti persetujuan renovasi atau riwayat komplain sebelumnya, gunakan sebagai konteks). WAJIB klasifikasikan setiap komplain ke salah satu sub-kategori berikut sebelum memanggil tool: administrasi_legal (mis. sengketa dokumen, PPJB, perpanjangan hak, dsb), keuangan (mis. bagi hasil tidak sesuai, keterlambatan pembayaran, dsb), operasional_hotel (mis. kerusakan fasilitas, kebersihan, layanan staf, dsb), atau lain_lain (kalau tidak jelas masuk ke tiga kategori di atas). Kalau pemilik tidak menyebutkan cukup detail untuk Anda mengklasifikasikan dengan yakin, tanyakan dulu sebelum memanggil tool.
+5. Pertanyaan seputar sisa poin menginap — jawab langsung dari data Sisa Poin di atas, ingatkan kalau poin akan hangus di akhir tahun.
+6. Pertanyaan umum lain seputar kepemilikan unit dan isi perjanjian PPJB mereka di properti ini.
+
+Aturan:
+- Selalu balas dalam Bahasa Indonesia, dengan nada hangat, profesional, dan ringkas (maksimal beberapa kalimat per balasan, gunakan poin bila perlu).
+- Sapa dan perlakukan pengguna sebagai pemilik unit terverifikasi, bukan tamu biasa.
+- Anda TIDAK memiliki akses langsung ke sistem reservasi atau pembayaran nyata. Untuk 3 kategori permintaan (antar jemput bandara, permintaan laporan bagi hasil, komplain), setelah Anda mengumpulkan SEMUA detail yang diperlukan dari pemilik, WAJIB panggil tool "teruskan_ke_tim" dengan ringkasan lengkap — ini akan benar-benar mengirim pesan WhatsApp ke tim terkait, bukan sekadar janji kosong. Setelah memanggil tool, sampaikan ke pemilik bahwa permintaannya sudah diteruskan dan akan segera dihubungi tim terkait.
+- Jangan panggil tool sebelum detail yang relevan untuk kategori tersebut lengkap (misalnya untuk antar jemput: tanggal, jam, nomor penerbangan, jumlah penumpang; untuk komplain: detail masalah).
+- Untuk booking_kamar, JANGAN gunakan tool "teruskan_ke_tim" — gunakan tool "ajukan_konfirmasi_booking" seperti dijelaskan di poin tugas nomor 1 di atas.
+- Jangan pernah membuat klaim spesifik palsu di luar data perjanjian yang diberikan (misalnya nominal bagi hasil pasti dalam Rupiah, nomor tiket, atau jadwal pasti) — gunakan bahasa perkiraan/umum untuk hal yang tidak tercantum dalam perjanjian dan arahkan ke tim terkait untuk angka pasti.
+- Tetap pada topik layanan pemilik unit di Le Aman Bali; jika ditanya di luar topik, arahkan kembali dengan sopan.`;
+
+    const tools = [
+      {
+        name: "teruskan_ke_tim",
+        description: "Panggil tool ini SETELAH detail permintaan pemilik unit sudah lengkap, untuk benar-benar meneruskan permintaan via WhatsApp ke tim terkait (front office, transportasi, keuangan, atau owner relations). HANYA untuk kategori antar_jemput, bagi_hasil, atau komplain — untuk booking_kamar gunakan tool ajukan_konfirmasi_booking. Jangan panggil tool ini untuk pertanyaan umum yang sudah cukup dijawab langsung.",
+        input_schema: {
+          type: "object",
+          properties: {
+            kategori: {
+              type: "string",
+              enum: ["antar_jemput", "bagi_hasil", "komplain"],
+              description: "Kategori permintaan: antar_jemput (antar jemput bandara), bagi_hasil (permintaan laporan/info bagi hasil), komplain."
+            },
+            sub_kategori: {
+              type: "string",
+              enum: ["administrasi_legal", "keuangan", "operasional_hotel", "lain_lain"],
+              description: "WAJIB diisi kalau kategori adalah komplain (kosongkan untuk kategori lain). Klasifikasi jenis komplain: administrasi_legal, keuangan, operasional_hotel, atau lain_lain."
+            },
+            ringkasan: {
+              type: "string",
+              description: "Ringkasan lengkap dan jelas berisi semua detail relevan yang sudah dikumpulkan dari pemilik (tanggal, jam, jumlah orang, deskripsi masalah, dsb), ditulis siap dibaca oleh tim terkait."
+            }
+          },
+          required: ["kategori", "ringkasan"]
+        }
+      },
+      {
+        name: "ajukan_konfirmasi_booking",
+        description: "Panggil tool ini SETELAH detail pemesanan kamar (tanggal check-in/out, jumlah tamu, estimasi poin) sudah lengkap. Tool ini menampilkan KARTU KONFIRMASI dengan TOMBOL kepada pemilik — tool ini TIDAK memotong poin atau mengirim apa pun, itu semua baru terjadi kalau pemilik sendiri mengklik tombolnya. Panggil kapan pun detail sudah cukup, tidak perlu menunggu konfirmasi verbal dari pemilik terlebih dahulu.",
+        input_schema: {
+          type: "object",
+          properties: {
+            ringkasan: {
+              type: "string",
+              description: "Ringkasan lengkap pesanan: tanggal check-in/check-out, jumlah malam, jumlah tamu, preferensi tipe kamar."
+            },
+            poin_dibutuhkan: {
+              type: "integer",
+              description: "Total poin yang dibutuhkan untuk pesanan ini, hasil perhitungan Anda (hari biasa=1, weekend=2, peak season/hari besar=3 poin per malam)."
+            }
+          },
+          required: ["ringkasan", "poin_dibutuhkan"]
+        }
+      }
+    ];
+
+    try{
+      const payload = {
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: messages,
+        tools: tools
+      };
+
+      let data = await callClaudeAPI(payload);
+      let round = 0;
+      let bookingCardSudahDitampilkan = false; // pengaman: cegah kartu konfirmasi (dan risiko klik ganda) muncul >1x dalam 1 giliran
+      const sinyalSudahDiteruskan = new Set(); // pengaman: cegah teruskan_ke_tim mengirim WA/catat komplain dobel kalau tool terpanggil >1x dalam 1 giliran dengan isi yang sama
+
+      // Loop maksimal 2 putaran: putaran pertama biasa, putaran kedua HANYA terjadi
+      // kalau AI memanggil salah satu tool (butuh 1 putaran lagi agar AI bisa memberi
+      // konfirmasi teks setelah tool dieksekusi, sekaligus menjaga riwayat percakapan
+      // tetap valid — tool_use WAJIB diikuti tool_result).
+      while(round < 2){
+        round++;
+        const content = (data && data.content) ? data.content : [];
+        const forwardCalls = content.filter(b => b.type === 'tool_use' && b.name === 'teruskan_ke_tim');
+        const bookingConfirmCalls = content.filter(b => b.type === 'tool_use' && b.name === 'ajukan_konfirmasi_booking');
+        const allToolCalls = [...forwardCalls, ...bookingConfirmCalls];
+
+        // simpan giliran asisten ini (teks + tool_use bila ada) ke riwayat
+        messages.push({ role: 'assistant', content: data.content });
+
+        if(allToolCalls.length === 0){
+          // tidak ada tool dipanggil -> ini balasan final, tampilkan dan selesai
+          const replyText = content.filter(b=>b.type==='text').map(b=>b.text).join('\n').trim()
+            || "Maaf, saya sedang mengalami kendala teknis. Silakan coba lagi sebentar lagi.";
+          addMessage('ai', replyText);
+          break;
+        }
+
+        // teruskan_ke_tim: benar-benar kirim notifikasi WhatsApp ke tim terkait (antar jemput/bagi hasil/komplain)
+        for(const call of forwardCalls){
+          const sinyal = `${call.input.kategori}|${call.input.sub_kategori || ''}|${call.input.ringkasan}`;
+          if(sinyalSudahDiteruskan.has(sinyal)) continue; // isi persis sama sudah diteruskan di giliran ini, jangan dobel
+          sinyalSudahDiteruskan.add(sinyal);
+          await forwardToTeam(call.input);
+        }
+
+        // ajukan_konfirmasi_booking: HANYA tampilkan kartu + tombol. Poin TIDAK dipotong di sini —
+        // baru dipotong kalau pemilik sendiri yang mengklik tombolnya (lihat renderBookingConfirmCard).
+        for(const call of bookingConfirmCalls){
+          if(bookingCardSudahDitampilkan) continue; // cegah kartu dobel dalam 1 giliran (menghindari risiko klik ganda)
+          renderBookingConfirmCard(call.input, call.id);
+          bookingCardSudahDitampilkan = true;
+        }
+
+        // kirim tool_result, WAJIB agar format percakapan tetap valid
+        messages.push({
+          role: 'user',
+          content: allToolCalls.map(call => ({
+            type: 'tool_result',
+            tool_use_id: call.id,
+            content: call.name === 'ajukan_konfirmasi_booking'
+              ? 'Kartu konfirmasi dengan tombol sudah ditampilkan ke pemilik. Menunggu pemilik mengklik tombol untuk melanjutkan — jangan anggap ini sudah otomatis dikonfirmasi.'
+              : 'Permintaan telah berhasil diproses dan diteruskan ke tim terkait via WhatsApp.'
+          }))
+        });
+
+        if(round >= 2) break; // sudah 2 putaran, hentikan agar tidak berulang tanpa batas
+
+        // panggil lagi supaya AI memberi konfirmasi teks final ke pemilik
+        payload.messages = messages;
+        data = await callClaudeAPI(payload);
+      }
+
+      removeTyping();
+    }catch(err){
+      removeTyping();
+      addMessage('ai', "Maaf, terjadi gangguan koneksi. Silakan coba kirim pesan Anda sekali lagi.");
+    }finally{
+      sendBtn.disabled = false;
+    }
+  }
+
+  // ---------- ADMIN PANEL (impor Excel + unduh ulang aplikasi, 100% lokal tanpa internet) ----------
+  const adminOverlay = document.getElementById('adminOverlay');
+  const adminSyncStatus = document.getElementById('adminSyncStatus');
+  const adminTableBody = document.getElementById('adminTableBody');
+  const adminImportError = document.getElementById('adminImportError');
+
+  document.getElementById('openAdminBtn').addEventListener('click', ()=>{
+    adminOverlay.classList.add('show');
+    renderAdminTable();
+    loadKomplainList();
+  });
+  document.getElementById('closeAdminBtn').addEventListener('click', ()=> adminOverlay.classList.remove('show'));
+  adminOverlay.addEventListener('click', (e)=>{ if(e.target === adminOverlay) adminOverlay.classList.remove('show'); });
+
+  // ---------- Tab switching panel admin ----------
+  document.querySelectorAll('.admin-tab').forEach(tabBtn=>{
+    tabBtn.addEventListener('click', ()=>{
+      document.querySelectorAll('.admin-tab').forEach(b=> b.classList.remove('active'));
+      document.querySelectorAll('.admin-tab-content').forEach(c=> c.classList.remove('active'));
+      tabBtn.classList.add('active');
+      const targetId = tabBtn.dataset.tab === 'pemilik' ? 'adminTabPemilik' : 'adminTabKomplain';
+      document.getElementById(targetId).classList.add('active');
+    });
+  });
+
+  // ---------- Daftar Komplain (dibaca dari Netlify Function "complaints", tersimpan permanen) ----------
+  const KOMPLAIN_SUB_LABEL = {
+    administrasi_legal: "Administrasi & Legal",
+    keuangan: "Keuangan",
+    operasional_hotel: "Layanan Operasional",
+    lain_lain: "Lain-lain"
+  };
+  const KOMPLAIN_STATUS_OPTIONS = ["Baru", "Sedang Diproses", "Selesai"];
+
+  document.getElementById('komplainRefreshBtn').addEventListener('click', loadKomplainList);
+
+  async function loadKomplainList(){
+    const statusEl = document.getElementById('komplainSyncStatus');
+    const tbody = document.getElementById('komplainTableBody');
+    statusEl.textContent = 'Memuat daftar komplain…';
+    try{
+      const res = await fetch(CONFIG.COMPLAINTS_ENDPOINT);
+      if(!res.ok) throw new Error('gagal memuat');
+      const data = await res.json();
+      const items = data.items || [];
+      renderKomplainTable(items);
+      const jumlahBaru = items.filter(i => i.status === 'Baru').length;
+      statusEl.textContent = `${items.length} komplain tercatat · ${jumlahBaru} berstatus "Baru"`;
+      const badge = document.getElementById('komplainBaruBadge');
+      if(jumlahBaru > 0){ badge.textContent = jumlahBaru; badge.style.display = 'inline-block'; }
+      else{ badge.style.display = 'none'; }
+    }catch(err){
+      statusEl.textContent = 'Belum bisa memuat daftar komplain — fitur ini perlu diaktifkan dulu (lihat CARA-AKTIFKAN-KOMPLAIN.md).';
+      tbody.innerHTML = '';
+    }
+  }
+
+  function renderKomplainTable(items){
+    const tbody = document.getElementById('komplainTableBody');
+    tbody.innerHTML = '';
+    items.forEach(item=>{
+      const tr = document.createElement('tr');
+      const tanggal = item.tanggal ? new Date(item.tanggal).toLocaleString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '-';
+      const statusClass = item.status === 'Baru' ? 'status-baru' : (item.status === 'Selesai' ? 'status-selesai' : 'status-diproses');
+      tr.innerHTML = `
+        <td>${escapeHtml(tanggal)}</td>
+        <td>${escapeHtml(item.unit)}</td>
+        <td>${escapeHtml(item.nama)}</td>
+        <td>${escapeHtml(item.subKategoriLabel || KOMPLAIN_SUB_LABEL[item.subKategori] || item.subKategori)}</td>
+        <td class="komplain-ringkasan-cell">${escapeHtml(item.ringkasan)}</td>
+        <td></td>`;
+      const statusCell = tr.querySelector('td:last-child');
+      const select = document.createElement('select');
+      select.className = 'komplain-status-select';
+      KOMPLAIN_STATUS_OPTIONS.forEach(opt=>{
+        const optEl = document.createElement('option');
+        optEl.value = opt; optEl.textContent = opt;
+        if(opt === item.status) optEl.selected = true;
+        select.appendChild(optEl);
+      });
+      select.addEventListener('change', ()=> updateKomplainStatus(item.id, select.value, tr, statusClass));
+      statusCell.appendChild(select);
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function updateKomplainStatus(id, newStatus, rowEl, oldStatusClass){
+    try{
+      const res = await fetch(CONFIG.COMPLAINTS_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_status', id, status: newStatus })
+      });
+      if(!res.ok) throw new Error('gagal update');
+      loadKomplainList(); // muat ulang supaya badge jumlah "Baru" ikut terupdate
+    }catch(err){
+      alert('Gagal mengubah status komplain. Coba lagi.');
+    }
+  }
+
+  document.getElementById('excelFileInput').addEventListener('change', (e)=>{
+    console.log('[Admin] File dipilih:', e.target.files[0] && e.target.files[0].name);
+    const file = e.target.files[0];
+    if(!file){
+      console.log('[Admin] Tidak ada file terpilih (dialog dibatalkan).');
+      return;
+    }
+    adminImportError.classList.remove('show');
+
+    const isCSV = /\.csv$/i.test(file.name);
+    const reader = new FileReader();
+
+    reader.onerror = () => {
+      console.error('[Admin] FileReader error:', reader.error);
+      handleError(new Error("Gagal membaca isi file dari komputer Anda. Coba pilih ulang filenya."));
+    };
+
+    function handleError(err){
+      console.error('[Admin] Import gagal:', err);
+      const msg = "Gagal membaca file: " + (err && err.message ? err.message : "format tidak dikenali. Pastikan menggunakan template yang disediakan.");
+      adminImportError.textContent = msg;
+      adminImportError.classList.add('show');
+      adminImportError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      alert(msg); // jaminan cadangan: pop-up ini tidak mungkin tersembunyi/terlewat
+    }
+
+    if(isCSV){
+      // Jalur CSV: murni JS, dijamin berfungsi tanpa internet.
+      reader.onload = (ev)=>{
+        console.log('[Admin] File CSV berhasil dibaca, mulai parsing...');
+        try{
+          const rows = parseCSV(String(ev.target.result));
+          processImportedRows(csvRowsToObjects(rows));
+        }catch(err){ handleError(err); }
+      };
+      reader.readAsText(file, 'utf-8');
+      return;
+    }
+
+    if(typeof XLSX === 'undefined'){
+      console.error('[Admin] Library XLSX belum termuat (typeof XLSX === "undefined").');
+      // Library pembaca .xlsx (dimuat dari internet saat halaman dibuka) belum/tidak termuat —
+      // ini biasanya karena koneksi internet saat itu, bukan karena file Excel-nya salah.
+      handleError(new Error("Pembaca file .xlsx belum siap (kemungkinan koneksi internet bermasalah saat halaman ini dimuat). Coba: (1) pastikan Anda terhubung ke internet lalu muat ulang halaman ini dan coba lagi, ATAU (2) buka file Excel Anda → File → Save As / Simpan Sebagai → pilih format CSV → unggah file .csv tersebut di sini (tidak butuh internet)."));
+      return;
+    }
+
+    reader.onload = (ev)=>{
+      console.log('[Admin] File .xlsx berhasil dibaca, mulai parsing...');
+      try{
+        const data = new Uint8Array(ev.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames.includes('Owners') ? 'Owners' : workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        processImportedRows(rawRows);
+      }catch(err){ handleError(err); }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  function renderAdminTable(){
+    adminSyncStatus.textContent = dbSource === 'excel-import'
+      ? `✓ ${OWNER_DB.length} pemilik berhasil diimpor dari Excel — siap diunduh sebagai aplikasi baru.`
+      : `Menampilkan ${OWNER_DB.length} pemilik yang saat ini tersimpan di aplikasi ini.`;
+    adminTableBody.innerHTML = '';
+    OWNER_DB.forEach(o=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHtml(o.name)}</td>
+        <td>${escapeHtml(o.unit)}</td>
+        <td>${escapeHtml(o.phone)}</td>
+        <td>${escapeHtml(o.agreement.no)}</td>`;
+      adminTableBody.appendChild(tr);
+    });
+  }
+
+  function escapeHtml(s){
+    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  document.getElementById('adminDownloadBtn').addEventListener('click', ()=>{
+    // Escape karakter <, >, & pada data JSON sebelum disisipkan ke dalam <script>.
+    // Tanpa ini, data pemilik yang kebetulan memuat karakter seperti < atau >
+    // (mis. di ringkasan klausul perjanjian) bisa membuat browser salah membaca
+    // batas tag <script>, sehingga file hasil unduhan menjadi rusak/tidak merespons.
+    const newDataJson = JSON.stringify(OWNER_DB, null, 2)
+      .replace(/</g, '\\u003c')
+      .replace(/>/g, '\\u003e')
+      .replace(/&/g, '\\u0026');
+
+    // sembunyikan overlay admin sementara agar file hasil unduhan tidak terbuka dalam kondisi modal aktif
+    const wasShowing = adminOverlay.classList.contains('show');
+    adminOverlay.classList.remove('show');
+
+    const currentHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+    if(wasShowing) adminOverlay.classList.add('show');
+
+    const newHtml = currentHtml.replace(
+      /\/\*OWNER_DATA_START\*\/[\s\S]*?\/\*OWNER_DATA_END\*\//,
+      '/*OWNER_DATA_START*/' + newDataJson + '/*OWNER_DATA_END*/'
+    );
+
+    if(newHtml === currentHtml){
+      adminImportError.textContent = "Gagal menyisipkan data baru ke file. Coba muat ulang halaman dan impor Excel lagi.";
+      adminImportError.classList.add('show');
+      return;
+    }
+
+    const blob = new Blob([newHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'le-aman-bali-owner-desk.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // ---------- Registrasi Service Worker (agar bisa "Install App" / Add to Home Screen) ----------
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {
+        // gagal daftar SW (mis. dibuka langsung dari file lokal tanpa hosting) — aplikasi tetap berjalan normal
+      });
+    });
+  }
+</script>
+</body>
+</html>
