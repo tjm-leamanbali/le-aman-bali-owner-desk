@@ -1407,6 +1407,7 @@ Aturan:
       let bookingCardSudahDitampilkan = false; // pengaman: cegah kartu konfirmasi (dan risiko klik ganda) muncul >1x dalam 1 giliran
       const sinyalSudahDiteruskan = new Set(); // pengaman: cegah teruskan_ke_tim mengirim WA/catat komplain dobel kalau tool terpanggil >1x dalam 1 giliran dengan isi yang sama
       let sudahDipaksaPanggilTool = false; // pengaman: batasi paksaan tool_choice cuma 1x, cegah loop tak berguna
+      let toolSungguhanPernahDipanggil = false; // pelacak: begitu ada tool_use ASLI di giliran manapun, deteksi "klaim palsu" di bawah harus dimatikan (supaya kalimat konfirmasi wajar setelah tool sungguhan dipanggil tidak salah dianggap klaim palsu)
 
       // Loop maksimal 3 putaran: putaran pertama biasa, putaran kedua HANYA terjadi
       // kalau AI memanggil salah satu tool ATAU kalau AI mengklaim (lewat teks) sudah
@@ -1440,9 +1441,9 @@ Aturan:
           // terdeteksi DAN kita belum pernah memaksa tool_choice di giliran ini, coba
           // paksa AI memanggil tool sungguhan sekali lagi — supaya kartu/pengiriman
           // benar-benar terjadi, bukan cuma diklaim di teks.
-          const polaToolPalsu = /\[Memanggil tool|Memanggil tool:|```\s*\{[\s\S]*"(nama_pemilik|nomor_unit|checkin|checkout|ringkasan|poin_dibutuhkan)"|kartu konfirmasi.{0,40}(sudah ditampilkan|saya tampilkan)|silakan klik tombol|sudah (saya )?(teruskan|kirim)kan? ke tim|tombol konfirmasi.{0,40}(untuk (Bapak|Ibu)|menyelesaikan)/i;
+          const polaToolPalsu = !toolSungguhanPernahDipanggil && /\[Memanggil tool|Memanggil tool:|```\s*\{[\s\S]*"(nama_pemilik|nomor_unit|checkin|checkout|ringkasan|poin_dibutuhkan)"|kartu konfirmasi|tombol konfirmasi|klik tombol|sudah ditampilkan|sudah (saya )?(teruskan|kirim)kan?|diteruskan ke tim|booking (resmi )?diproses/i.test(replyText);
 
-          if(polaToolPalsu.test(replyText) && !sudahDipaksaPanggilTool && round < 3){
+          if(polaToolPalsu && !sudahDipaksaPanggilTool && round < 3){
             sudahDipaksaPanggilTool = true;
             messages.push({
               role: 'user',
@@ -1455,13 +1456,15 @@ Aturan:
             continue;
           }
 
-          if(polaToolPalsu.test(replyText)){
+          if(polaToolPalsu){
             replyText = "Maaf, permintaan Anda belum berhasil diproses sepenuhnya karena kendala teknis sesaat. Bisa tolong ulangi permintaan Anda sekali lagi?";
           }
 
           addMessage('ai', replyText);
           break;
         }
+
+        toolSungguhanPernahDipanggil = true; // tool_use ASLI terdeteksi di giliran ini -> matikan deteksi klaim palsu untuk sisa percakapan ini
 
         // teruskan_ke_tim: benar-benar kirim notifikasi WhatsApp ke tim terkait (antar jemput/bagi hasil/komplain)
         for(const call of forwardCalls){
