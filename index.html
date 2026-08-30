@@ -1406,12 +1406,16 @@ Aturan:
       let round = 0;
       let bookingCardSudahDitampilkan = false; // pengaman: cegah kartu konfirmasi (dan risiko klik ganda) muncul >1x dalam 1 giliran
       const sinyalSudahDiteruskan = new Set(); // pengaman: cegah teruskan_ke_tim mengirim WA/catat komplain dobel kalau tool terpanggil >1x dalam 1 giliran dengan isi yang sama
+      let sudahDipaksaPanggilTool = false; // pengaman: batasi paksaan tool_choice cuma 1x, cegah loop tak berguna
 
-      // Loop maksimal 2 putaran: putaran pertama biasa, putaran kedua HANYA terjadi
-      // kalau AI memanggil salah satu tool (butuh 1 putaran lagi agar AI bisa memberi
-      // konfirmasi teks setelah tool dieksekusi, sekaligus menjaga riwayat percakapan
-      // tetap valid — tool_use WAJIB diikuti tool_result).
-      while(round < 2){
+      // Loop maksimal 3 putaran: putaran pertama biasa, putaran kedua HANYA terjadi
+      // kalau AI memanggil salah satu tool ATAU kalau AI mengklaim (lewat teks) sudah
+      // menampilkan kartu/mengirim padahal tidak benar-benar memanggil tool (lihat
+      // pengaman "polaToolPalsu" di bawah) — pada kasus itu putaran tambahan dipakai
+      // untuk memaksa AI benar-benar memanggil tool via tool_choice. Putaran ketiga
+      // HANYA terjadi kalau putaran kedua adalah hasil paksaan tool_choice tadi (butuh
+      // 1 putaran lagi agar AI bisa memberi konfirmasi teks setelah tool dieksekusi).
+      while(round < 3){
         round++;
         const content = (data && data.content) ? data.content : [];
         const forwardCalls = content.filter(b => b.type === 'tool_use' && b.name === 'teruskan_ke_tim');
@@ -1422,16 +1426,35 @@ Aturan:
         messages.push({ role: 'assistant', content: data.content });
 
         if(allToolCalls.length === 0){
-          // tidak ada tool dipanggil -> ini balasan final, tampilkan dan selesai
+          // tidak ada tool dipanggil -> cek dulu apakah ini balasan final biasa, atau
+          // AI "mengarang" klaim sudah memanggil tool/menampilkan kartu/mengirim pesan
+          // padahal tidak (lihat komentar polaToolPalsu di bawah).
           let replyText = content.filter(b=>b.type==='text').map(b=>b.text).join('\n').trim()
             || "Maaf, saya sedang mengalami kendala teknis. Silakan coba lagi sebentar lagi.";
 
-          // Jaring pengaman: kadang AI "mengarang" teks yang menyerupai pemanggilan tool
-          // (mis. "[Memanggil tool: ...]" diikuti blok kode JSON) alih-alih benar-benar
-          // memanggil tool lewat mekanisme yang disediakan. Kalau pola ini terdeteksi,
-          // jangan tampilkan teks mentahnya (membingungkan pemilik) — tampilkan pesan yang
-          // lebih jelas dan minta mereka mengulang permintaannya.
-          const polaToolPalsu = /\[Memanggil tool|Memanggil tool:|```\s*\{[\s\S]*"(nama_pemilik|nomor_unit|checkin|checkout|ringkasan|poin_dibutuhkan)"/i;
+          // Jaring pengaman: kadang AI "mengarang" teks yang menyerupai atau mengklaim
+          // sudah memanggil tool/menampilkan kartu/meneruskan pesan (mis. "[Memanggil
+          // tool: ...]" diikuti blok kode JSON, atau kalimat "kartu konfirmasi sudah
+          // ditampilkan, silakan klik tombol" / "sudah saya teruskan ke tim") alih-alih
+          // benar-benar memanggil tool lewat mekanisme yang disediakan. Kalau pola ini
+          // terdeteksi DAN kita belum pernah memaksa tool_choice di giliran ini, coba
+          // paksa AI memanggil tool sungguhan sekali lagi — supaya kartu/pengiriman
+          // benar-benar terjadi, bukan cuma diklaim di teks.
+          const polaToolPalsu = /\[Memanggil tool|Memanggil tool:|```\s*\{[\s\S]*"(nama_pemilik|nomor_unit|checkin|checkout|ringkasan|poin_dibutuhkan)"|kartu konfirmasi.{0,40}(sudah ditampilkan|saya tampilkan)|silakan klik tombol|sudah (saya )?(teruskan|kirim)kan? ke tim|tombol konfirmasi.{0,40}(untuk (Bapak|Ibu)|menyelesaikan)/i;
+
+          if(polaToolPalsu.test(replyText) && !sudahDipaksaPanggilTool && round < 3){
+            sudahDipaksaPanggilTool = true;
+            messages.push({
+              role: 'user',
+              content: 'Sistem: balasan Anda sebelumnya TIDAK benar-benar memanggil tool apa pun, meskipun teksnya menyebut sudah menampilkan kartu/tombol atau meneruskan ke tim. Panggil SEKARANG tool yang sesuai (ajukan_konfirmasi_booking untuk booking kamar, atau teruskan_ke_tim untuk antar jemput/bagi hasil/komplain) lewat mekanisme tool calling — jangan tulis teks apa pun selain memanggil tool.'
+            });
+            payload.messages = messages;
+            payload.tool_choice = { type: 'any' }; // paksa API benar-benar memanggil salah satu tool, bukan cuma menulis teks
+            data = await callClaudeAPI(payload);
+            delete payload.tool_choice; // lepas paksaan lagi supaya giliran berikutnya (kalau ada) tetap bebas seperti biasa
+            continue;
+          }
+
           if(polaToolPalsu.test(replyText)){
             replyText = "Maaf, permintaan Anda belum berhasil diproses sepenuhnya karena kendala teknis sesaat. Bisa tolong ulangi permintaan Anda sekali lagi?";
           }
@@ -1468,7 +1491,7 @@ Aturan:
           }))
         });
 
-        if(round >= 2) break; // sudah 2 putaran, hentikan agar tidak berulang tanpa batas
+        if(round >= 3) break; // sudah 3 putaran, hentikan agar tidak berulang tanpa batas
 
         // panggil lagi supaya AI memberi konfirmasi teks final ke pemilik
         payload.messages = messages;
