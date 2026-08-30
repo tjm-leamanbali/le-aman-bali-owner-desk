@@ -18,6 +18,15 @@ const SUB_KATEGORI_LABEL = {
   lain_lain: "Lain-lain"
 };
 
+// Header CORS — wajib ada di SETIAP response (termasuk error), supaya browser
+// mengizinkan halaman web memanggil endpoint ini dari domain lain.
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Content-Type": "application/json"
+};
+
 function generateId(){
   const now = new Date();
   const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
@@ -25,6 +34,13 @@ function generateId(){
 }
 
 exports.handler = async (event) => {
+  // Browser selalu mengirim request OPTIONS ("preflight") sebelum POST/GET sungguhan
+  // ke domain lain. Kalau tidak dijawab dengan header CORS di sini, browser akan
+  // memblokir request aslinya dengan error "blocked by CORS policy".
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers: CORS_HEADERS, body: "" };
+  }
+
   try {
     const store = getStore({
       name: "komplain-log",
@@ -41,7 +57,7 @@ exports.handler = async (event) => {
       items.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
       return {
         statusCode: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: CORS_HEADERS,
         body: JSON.stringify({ items })
       };
     }
@@ -53,22 +69,22 @@ exports.handler = async (event) => {
       if (action === "update_status") {
         const { id, status } = payload;
         if (!id || !status) {
-          return { statusCode: 400, body: JSON.stringify({ success: false, error: "id dan status wajib diisi." }) };
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: "id dan status wajib diisi." }) };
         }
         const existing = await store.get(id, { type: "json" });
         if (!existing) {
-          return { statusCode: 404, body: JSON.stringify({ success: false, error: "Komplain tidak ditemukan." }) };
+          return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: "Komplain tidak ditemukan." }) };
         }
         existing.status = status;
         existing.terakhirDiubah = new Date().toISOString();
         await store.setJSON(id, existing);
-        return { statusCode: 200, body: JSON.stringify({ success: true, item: existing }) };
+        return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, item: existing }) };
       }
 
       // default: buat catatan komplain baru
       const { unit, nama, phone, subKategori, ringkasan } = payload;
       if (!unit || !nama || !subKategori || !ringkasan) {
-        return { statusCode: 400, body: JSON.stringify({ success: false, error: "unit, nama, subKategori, dan ringkasan wajib diisi." }) };
+        return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ success: false, error: "unit, nama, subKategori, dan ringkasan wajib diisi." }) };
       }
 
       const id = generateId();
@@ -86,13 +102,14 @@ exports.handler = async (event) => {
       };
       await store.setJSON(id, record);
 
-      return { statusCode: 200, body: JSON.stringify({ success: true, item: record }) };
+      return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, item: record }) };
     }
 
-    return { statusCode: 405, body: JSON.stringify({ error: "Method Not Allowed" }) };
+    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: "Method Not Allowed" }) };
   } catch (err) {
     return {
       statusCode: 500,
+      headers: CORS_HEADERS,
       body: JSON.stringify({ success: false, error: err.message || "Terjadi kesalahan pada server." })
     };
   }
