@@ -1345,7 +1345,8 @@ Aturan:
 - Jangan panggil tool sebelum detail yang relevan untuk kategori tersebut lengkap (misalnya untuk antar jemput: tanggal, jam, nomor penerbangan, jumlah penumpang; untuk komplain: detail masalah).
 - Untuk booking_kamar, JANGAN gunakan tool "teruskan_ke_tim" — gunakan tool "ajukan_konfirmasi_booking" seperti dijelaskan di poin tugas nomor 1 di atas.
 - Jangan pernah membuat klaim spesifik palsu di luar data perjanjian yang diberikan (misalnya nominal bagi hasil pasti dalam Rupiah, nomor tiket, atau jadwal pasti) — gunakan bahasa perkiraan/umum untuk hal yang tidak tercantum dalam perjanjian dan arahkan ke tim terkait untuk angka pasti.
-- Tetap pada topik layanan pemilik unit di Le Aman Bali; jika ditanya di luar topik, arahkan kembali dengan sopan.`;
+- Tetap pada topik layanan pemilik unit di Le Aman Bali; jika ditanya di luar topik, arahkan kembali dengan sopan.
+- SANGAT PENTING: kalau Anda memutuskan untuk memanggil tool (teruskan_ke_tim atau ajukan_konfirmasi_booking), panggil tool tersebut LEWAT MEKANISME TOOL CALLING YANG DISEDIAKAN — JANGAN PERNAH menuliskan pemanggilan tool sebagai teks biasa di balasan Anda (misalnya menulis "[Memanggil tool: ...]", blok kode JSON, atau deskripsi seolah-olah tool sudah dipanggil). Balasan teks Anda hanya boleh berisi kalimat percakapan biasa ke pemilik — proses pemanggilan tool sepenuhnya terjadi di luar teks balasan Anda.`;
 
     const tools = [
       {
@@ -1422,8 +1423,19 @@ Aturan:
 
         if(allToolCalls.length === 0){
           // tidak ada tool dipanggil -> ini balasan final, tampilkan dan selesai
-          const replyText = content.filter(b=>b.type==='text').map(b=>b.text).join('\n').trim()
+          let replyText = content.filter(b=>b.type==='text').map(b=>b.text).join('\n').trim()
             || "Maaf, saya sedang mengalami kendala teknis. Silakan coba lagi sebentar lagi.";
+
+          // Jaring pengaman: kadang AI "mengarang" teks yang menyerupai pemanggilan tool
+          // (mis. "[Memanggil tool: ...]" diikuti blok kode JSON) alih-alih benar-benar
+          // memanggil tool lewat mekanisme yang disediakan. Kalau pola ini terdeteksi,
+          // jangan tampilkan teks mentahnya (membingungkan pemilik) — tampilkan pesan yang
+          // lebih jelas dan minta mereka mengulang permintaannya.
+          const polaToolPalsu = /\[Memanggil tool|Memanggil tool:|```\s*\{[\s\S]*"(nama_pemilik|nomor_unit|checkin|checkout|ringkasan|poin_dibutuhkan)"/i;
+          if(polaToolPalsu.test(replyText)){
+            replyText = "Maaf, permintaan Anda belum berhasil diproses sepenuhnya karena kendala teknis sesaat. Bisa tolong ulangi permintaan Anda sekali lagi?";
+          }
+
           addMessage('ai', replyText);
           break;
         }
