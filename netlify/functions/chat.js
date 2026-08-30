@@ -18,6 +18,19 @@ exports.handler = async (event) => {
   try {
     const payload = JSON.parse(event.body || "{}");
 
+    // Bangun body permintaan ke Anthropic. PENTING: teruskan "tools" dan "tool_choice"
+    // apa adanya kalau dikirim dari frontend — sebelumnya dua field ini terbuang di sini,
+    // sehingga AI tidak pernah benar-benar tahu ada tool yang bisa dipanggil (ia cuma
+    // "mengarang" teks yang menyerupai pemanggilan tool, bukan benar-benar memanggilnya).
+    const upstreamBody = {
+      model: payload.model || "claude-sonnet-4-6",
+      max_tokens: payload.max_tokens || 1000,
+      system: payload.system,
+      messages: payload.messages
+    };
+    if (payload.tools) upstreamBody.tools = payload.tools;
+    if (payload.tool_choice) upstreamBody.tool_choice = payload.tool_choice;
+
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -25,12 +38,7 @@ exports.handler = async (event) => {
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01"
       },
-      body: JSON.stringify({
-        model: payload.model || "claude-sonnet-4-6",
-        max_tokens: payload.max_tokens || 1000,
-        system: payload.system,
-        messages: payload.messages
-      })
+      body: JSON.stringify(upstreamBody)
     });
 
     const data = await response.json();
